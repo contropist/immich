@@ -1,106 +1,89 @@
 <script lang="ts">
-	import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import { api, SharedLinkResponseDto } from '@api';
-	import { goto } from '$app/navigation';
-	import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import { onMount } from 'svelte';
-	import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
-	import ConfirmDialogue from '$lib/components/shared-components/confirm-dialogue.svelte';
-	import { handleError } from '$lib/utils/handle-error';
-	import { AppRoute } from '$lib/constants';
+  import { goto, afterNavigate } from '$app/navigation';
+  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import CreateSharedLinkModal from '$lib/components/shared-components/create-share-link-modal/create-shared-link-modal.svelte';
+  import {
+    notificationController,
+    NotificationType,
+  } from '$lib/components/shared-components/notification/notification';
+  import SharedLinkCard from '$lib/components/sharedlinks-page/shared-link-card.svelte';
+  import { AppRoute } from '$lib/constants';
+  import { handleError } from '$lib/utils/handle-error';
+  import { getAllSharedLinks, removeSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft } from '@mdi/js';
+  import { onMount } from 'svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
-	let sharedLinks: SharedLinkResponseDto[] = [];
-	let editSharedLink: SharedLinkResponseDto | null = null;
+  let sharedLinks: SharedLinkResponseDto[] = $state([]);
+  let editSharedLink: SharedLinkResponseDto | null = $state(null);
 
-	let deleteLinkId: string | null = null;
+  const refresh = async () => {
+    sharedLinks = await getAllSharedLinks();
+  };
 
-	const refresh = async () => {
-		const { data } = await api.sharedLinkApi.getAllSharedLinks();
-		sharedLinks = data;
-	};
+  onMount(async () => {
+    await refresh();
+  });
 
-	onMount(async () => {
-		await refresh();
-	});
+  const handleDeleteLink = async (id: string) => {
+    const isConfirmed = await dialogController.show({
+      title: $t('delete_shared_link'),
+      prompt: $t('confirm_delete_shared_link'),
+      confirmText: $t('delete'),
+    });
 
-	const handleDeleteLink = async () => {
-		if (!deleteLinkId) {
-			return;
-		}
+    if (!isConfirmed) {
+      return;
+    }
 
-		try {
-			await api.sharedLinkApi.removeSharedLink({ id: deleteLinkId });
-			notificationController.show({ message: 'Deleted shared link', type: NotificationType.Info });
-			deleteLinkId = null;
-			refresh();
-		} catch (error) {
-			handleError(error, 'Unable to delete shared link');
-		}
-	};
+    try {
+      await removeSharedLink({ id });
+      notificationController.show({ message: $t('deleted_shared_link'), type: NotificationType.Info });
+      await refresh();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_delete_shared_link'));
+    }
+  };
 
-	const handleEditDone = async () => {
-		refresh();
-		editSharedLink = null;
-	};
+  const handleEditDone = async () => {
+    await refresh();
+    editSharedLink = null;
+  };
 
-	const handleCopyLink = async (key: string) => {
-		const link = `${window.location.origin}/share/${key}`;
-		await navigator.clipboard.writeText(link);
-		notificationController.show({
-			message: 'Link copied to clipboard',
-			type: NotificationType.Info
-		});
-	};
+  let backUrl: string = AppRoute.SHARING;
+
+  afterNavigate(({ from }) => {
+    let url: string | undefined = from?.url?.pathname;
+    backUrl = url || AppRoute.SHARING;
+  });
 </script>
 
-<ControlAppBar backIcon={ArrowLeft} on:close-button-click={() => goto(AppRoute.SHARING)}>
-	<svelte:fragment slot="leading">Shared links</svelte:fragment>
+<ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(backUrl)}>
+  {#snippet leading()}
+    {$t('shared_links')}
+  {/snippet}
 </ControlAppBar>
 
-<section class="flex flex-col pb-[120px] mt-[120px]">
-	<div class="w-[50%] m-auto mb-4 dark:text-immich-gray">
-		<p>Manage shared links</p>
-	</div>
-	{#if sharedLinks.length === 0}
-		<div
-			class="w-[50%] m-auto bg-gray-100 flex place-items-center place-content-center rounded-lg p-12"
-		>
-			<p>You don't have any shared links</p>
-		</div>
-	{:else}
-		<div class="flex flex-col w-[50%] m-auto">
-			{#each sharedLinks as link (link.id)}
-				<SharedLinkCard
-					{link}
-					on:delete={() => (deleteLinkId = link.id)}
-					on:edit={() => (editSharedLink = link)}
-					on:copy={() => handleCopyLink(link.key)}
-				/>
-			{/each}
-		</div>
-	{/if}
+<section class="mt-[120px] flex flex-col pb-[120px] container max-w-screen-lg mx-auto px-3">
+  <div class="mb-4 dark:text-immich-gray">
+    <p>{$t('manage_shared_links')}</p>
+  </div>
+  {#if sharedLinks.length === 0}
+    <div
+      class="flex place-content-center place-items-center rounded-lg bg-gray-100 dark:bg-immich-dark-gray dark:text-immich-gray p-12"
+    >
+      <p>{$t('you_dont_have_any_shared_links')}</p>
+    </div>
+  {:else}
+    <div class="flex flex-col">
+      {#each sharedLinks as link (link.id)}
+        <SharedLinkCard {link} onDelete={() => handleDeleteLink(link.id)} onEdit={() => (editSharedLink = link)} />
+      {/each}
+    </div>
+  {/if}
 </section>
 
 {#if editSharedLink}
-	<CreateSharedLinkModal
-		editingLink={editSharedLink}
-		shareType={editSharedLink.type}
-		album={editSharedLink.album}
-		on:close={handleEditDone}
-	/>
-{/if}
-
-{#if deleteLinkId}
-	<ConfirmDialogue
-		title="Delete Shared Link"
-		prompt="Are you want to delete this shared link?"
-		confirmText="Delete"
-		on:confirm={() => handleDeleteLink()}
-		on:cancel={() => (deleteLinkId = null)}
-	/>
+  <CreateSharedLinkModal editingLink={editSharedLink} onClose={handleEditDone} />
 {/if}

@@ -1,38 +1,65 @@
 <script lang="ts">
-	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-	import {
-		NotificationType,
-		notificationController
-	} from '$lib/components/shared-components/notification/notification';
-	import { AlbumResponseDto, api } from '@api';
-	import DeleteOutline from 'svelte-material-icons/DeleteOutline.svelte';
-	import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import {
+    NotificationType,
+    notificationController,
+  } from '$lib/components/shared-components/notification/notification';
+  import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
+  import { mdiDeleteOutline, mdiImageRemoveOutline } from '@mdi/js';
+  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
-	export let album: AlbumResponseDto;
+  interface Props {
+    album: AlbumResponseDto;
+    onRemove: ((assetIds: string[]) => void) | undefined;
+    menuItem?: boolean;
+  }
 
-	const { getAssets, clearSelect } = getAssetControlContext();
+  let { album = $bindable(), onRemove, menuItem = false }: Props = $props();
 
-	const handleRemoveFromAlbum = async () => {
-		if (window.confirm('Do you want to remove selected assets from the album?')) {
-			try {
-				const { data } = await api.albumApi.removeAssetFromAlbum({
-					id: album.id,
-					removeAssetsDto: {
-						assetIds: Array.from(getAssets()).map((a) => a.id)
-					}
-				});
+  const { getAssets, clearSelect } = getAssetControlContext();
 
-				album = data;
-				clearSelect();
-			} catch (e) {
-				console.error('Error [album-viewer] [removeAssetFromAlbum]', e);
-				notificationController.show({
-					type: NotificationType.Error,
-					message: 'Error removing assets from album, check console for more details'
-				});
-			}
-		}
-	};
+  const removeFromAlbum = async () => {
+    const isConfirmed = await dialogController.show({
+      prompt: $t('remove_assets_album_confirmation', { values: { count: getAssets().size } }),
+    });
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      const ids = [...getAssets()].map((a) => a.id);
+      const results = await removeAssetFromAlbum({
+        id: album.id,
+        bulkIdsDto: { ids },
+      });
+
+      album = await getAlbumInfo({ id: album.id });
+
+      onRemove?.(ids);
+
+      const count = results.filter(({ success }) => success).length;
+      notificationController.show({
+        type: NotificationType.Info,
+        message: $t('assets_removed_count', { values: { count } }),
+      });
+
+      clearSelect();
+    } catch (error) {
+      console.error('Error [album-viewer] [removeAssetFromAlbum]', error);
+      notificationController.show({
+        type: NotificationType.Error,
+        message: $t('errors.error_removing_assets_from_album'),
+      });
+    }
+  };
 </script>
 
-<CircleIconButton title="Remove from album" on:click={handleRemoveFromAlbum} logo={DeleteOutline} />
+{#if menuItem}
+  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} onClick={removeFromAlbum} />
+{:else}
+  <CircleIconButton title={$t('remove_from_album')} icon={mdiDeleteOutline} onclick={removeFromAlbum} />
+{/if}

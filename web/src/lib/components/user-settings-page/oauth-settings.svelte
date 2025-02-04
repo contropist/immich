@@ -1,80 +1,72 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { oauth, OAuthConfigResponseDto, UserResponseDto } from '@api';
-	import { onMount } from 'svelte';
-	import { fade } from 'svelte/transition';
-	import { handleError } from '../../utils/handle-error';
-	import LoadingSpinner from '../shared-components/loading-spinner.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import Button from '../elements/buttons/button.svelte';
+  import { goto } from '$app/navigation';
+  import { featureFlags } from '$lib/stores/server-config.store';
+  import { oauth } from '$lib/utils';
+  import { type UserAdminResponseDto } from '@immich/sdk';
+  import { onMount } from 'svelte';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import LoadingSpinner from '../shared-components/loading-spinner.svelte';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import { t } from 'svelte-i18n';
 
-	export let user: UserResponseDto;
+  interface Props {
+    user: UserAdminResponseDto;
+  }
 
-	let config: OAuthConfigResponseDto = { enabled: false, passwordLoginEnabled: true };
-	let loading = true;
+  let { user = $bindable() }: Props = $props();
 
-	onMount(async () => {
-		if (oauth.isCallback(window.location)) {
-			try {
-				loading = true;
+  let loading = $state(true);
 
-				const { data } = await oauth.link(window.location);
-				user = data;
+  onMount(async () => {
+    if (oauth.isCallback(globalThis.location)) {
+      try {
+        loading = true;
 
-				notificationController.show({
-					message: 'Linked OAuth account',
-					type: NotificationType.Info
-				});
-			} catch (error) {
-				handleError(error, 'Unable to link OAuth account');
-			} finally {
-				goto('?open=oauth');
-			}
-		}
+        user = await oauth.link(globalThis.location);
 
-		try {
-			const { data } = await oauth.getConfig(window.location);
-			config = data;
-		} catch (error) {
-			handleError(error, 'Unable to load OAuth config');
-		}
+        notificationController.show({
+          message: $t('linked_oauth_account'),
+          type: NotificationType.Info,
+        });
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_link_oauth_account'));
+      } finally {
+        await goto('?open=oauth');
+      }
+    }
 
-		loading = false;
-	});
+    loading = false;
+  });
 
-	const handleUnlink = async () => {
-		try {
-			const { data } = await oauth.unlink();
-			user = data;
-			notificationController.show({
-				message: 'Unlinked OAuth account',
-				type: NotificationType.Info
-			});
-		} catch (error) {
-			handleError(error, 'Unable to unlink account');
-		}
-	};
+  const handleUnlink = async () => {
+    try {
+      user = await oauth.unlink();
+      notificationController.show({
+        message: $t('unlinked_oauth_account'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_unlink_account'));
+    }
+  };
 </script>
 
 <section class="my-4">
-	<div in:fade={{ duration: 500 }}>
-		<div class="flex justify-end">
-			{#if loading}
-				<div class="flex place-items-center place-content-center">
-					<LoadingSpinner />
-				</div>
-			{:else if config.enabled}
-				{#if user.oauthId}
-					<Button size="sm" on:click={() => handleUnlink()}>Unlink Oauth</Button>
-				{:else}
-					<a href={config.url}>
-						<Button size="sm" on:click={() => handleUnlink()}>Link to OAuth</Button>
-					</a>
-				{/if}
-			{/if}
-		</div>
-	</div>
+  <div in:fade={{ duration: 500 }}>
+    <div class="flex justify-end">
+      {#if loading}
+        <div class="flex place-content-center place-items-center">
+          <LoadingSpinner />
+        </div>
+      {:else if $featureFlags.oauth}
+        {#if user.oauthId}
+          <Button size="sm" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
+        {:else}
+          <Button size="sm" onclick={() => oauth.authorize(globalThis.location)}>{$t('link_to_oauth')}</Button>
+        {/if}
+      {/if}
+    </div>
+  </div>
 </section>

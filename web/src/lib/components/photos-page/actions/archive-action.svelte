@@ -1,51 +1,48 @@
 <script lang="ts">
-	import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
-	import {
-		NotificationType,
-		notificationController
-	} from '$lib/components/shared-components/notification/notification';
-	import { api } from '@api';
-	import ArchiveArrowDownOutline from 'svelte-material-icons/ArchiveArrowDownOutline.svelte';
-	import ArchiveArrowUpOutline from 'svelte-material-icons/ArchiveArrowUpOutline.svelte';
-	import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
-	import { OnAssetArchive, getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import type { OnArchive } from '$lib/utils/actions';
+  import { mdiArchiveArrowDownOutline, mdiArchiveArrowUpOutline, mdiTimerSand } from '@mdi/js';
+  import MenuOption from '../../shared-components/context-menu/menu-option.svelte';
+  import { getAssetControlContext } from '../asset-select-control-bar.svelte';
+  import { archiveAssets } from '$lib/utils/asset-utils';
+  import { t } from 'svelte-i18n';
 
-	export let onAssetArchive: OnAssetArchive = (asset, isArchived) => {
-		asset.isArchived = isArchived;
-	};
+  interface Props {
+    onArchive: OnArchive;
+    menuItem?: boolean;
+    unarchive?: boolean;
+  }
 
-	export let menuItem = false;
-	export let unarchive = false;
+  let { onArchive, menuItem = false, unarchive = false }: Props = $props();
 
-	$: text = unarchive ? 'Unarchive' : 'Archive';
-	$: logo = unarchive ? ArchiveArrowUpOutline : ArchiveArrowDownOutline;
+  let text = $derived(unarchive ? $t('unarchive') : $t('to_archive'));
+  let icon = $derived(unarchive ? mdiArchiveArrowUpOutline : mdiArchiveArrowDownOutline);
 
-	const { getAssets, clearSelect } = getAssetControlContext();
+  let loading = $state(false);
 
-	const handleArchive = async () => {
-		const isArchived = !unarchive;
-		let cnt = 0;
+  const { clearSelect, getOwnedAssets } = getAssetControlContext();
 
-		for (const asset of getAssets()) {
-			if (asset.isArchived !== isArchived) {
-				api.assetApi.updateAsset({ id: asset.id, updateAssetDto: { isArchived } });
-
-				onAssetArchive(asset, isArchived);
-				cnt = cnt + 1;
-			}
-		}
-
-		notificationController.show({
-			message: `${isArchived ? 'Archived' : 'Unarchived'} ${cnt}`,
-			type: NotificationType.Info
-		});
-
-		clearSelect();
-	};
+  const handleArchive = async () => {
+    const isArchived = !unarchive;
+    const assets = [...getOwnedAssets()].filter((asset) => asset.isArchived !== isArchived);
+    loading = true;
+    const ids = await archiveAssets(assets, isArchived);
+    if (ids) {
+      onArchive(ids, isArchived);
+      clearSelect();
+    }
+    loading = false;
+  };
 </script>
 
 {#if menuItem}
-	<MenuOption {text} on:click={handleArchive} />
-{:else}
-	<CircleIconButton title={text} {logo} on:click={handleArchive} />
+  <MenuOption {text} {icon} onClick={handleArchive} />
+{/if}
+
+{#if !menuItem}
+  {#if loading}
+    <CircleIconButton title={$t('loading')} icon={mdiTimerSand} onclick={() => {}} />
+  {:else}
+    <CircleIconButton title={text} {icon} onclick={handleArchive} />
+  {/if}
 {/if}

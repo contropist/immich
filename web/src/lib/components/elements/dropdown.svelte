@@ -1,62 +1,122 @@
-<script lang="ts">
-	import SwapVertical from 'svelte-material-icons/SwapVertical.svelte';
-	import Check from 'svelte-material-icons/Check.svelte';
-	import LinkButton from './buttons/link-button.svelte';
-	import { clickOutside } from '$lib/utils/click-outside';
-	import { fly } from 'svelte/transition';
+<script lang="ts" module>
+  // Necessary for eslint
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  type T = any;
 
-	export let options: string[] = [];
-	export let value = options[0];
-
-	let showMenu = false;
-
-	const handleClickOutside = () => {
-		showMenu = false;
-	};
-
-	const handleSelectOption = (index: number) => {
-		value = options[index];
-		showMenu = false;
-	};
+  export type RenderedOption = {
+    title: string;
+    icon?: string;
+    disabled?: boolean;
+  };
 </script>
 
-<div id="dropdown-button" use:clickOutside on:outclick={handleClickOutside}>
-	<!-- BUTTON TITLE -->
-	<LinkButton on:click={() => (showMenu = true)}>
-		<div class="flex place-items-center gap-2 text-sm">
-			<SwapVertical size="18" />
-			{value}
-		</div>
-	</LinkButton>
+<script lang="ts" generics="T">
+  import { clickOutside } from '$lib/actions/click-outside';
+  import { Button, Text } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
+  import { isEqual } from 'lodash-es';
+  import { fly } from 'svelte/transition';
+  import Icon from './icon.svelte';
 
-	<!-- DROP DOWN MENU -->
-	{#if showMenu}
-		<div
-			transition:fly={{ y: -30, x: 30, duration: 200 }}
-			class="absolute top-5 right-0 min-w-[250px] bg-gray-100 dark:bg-gray-700 rounded-2xl py-4 shadow-lg dark:text-white text-black z-50 text-md flex flex-col"
-		>
-			{#each options as option, index (option)}
-				<button
-					class="hover:bg-gray-300 dark:hover:bg-gray-800 p-4 transition-all grid grid-cols-[20px,1fr] place-items-center gap-2"
-					on:click={() => handleSelectOption(index)}
-				>
-					{#if value == option}
-						<div class="text-immich-primary dark:text-immich-dark-primary font-medium">
-							<Check size="18" />
-						</div>
-						<p
-							class="justify-self-start text-immich-primary dark:text-immich-dark-primary font-medium"
-						>
-							{option}
-						</p>
-					{:else}
-						<div />
-						<p class="justify-self-start">
-							{option}
-						</p>
-					{/if}
-				</button>
-			{/each}
-		</div>
-	{/if}
+  interface Props {
+    class?: string;
+    options: T[];
+    selectedOption?: any;
+    showMenu?: boolean;
+    controlable?: boolean;
+    hideTextOnSmallScreen?: boolean;
+    title?: string | undefined;
+    onSelect: (option: T) => void;
+    onClickOutside?: () => void;
+    render?: (item: T) => string | RenderedOption;
+  }
+
+  let {
+    class: className = '',
+    options,
+    selectedOption = $bindable(options[0]),
+    showMenu = $bindable(false),
+    controlable = false,
+    hideTextOnSmallScreen = true,
+    title = undefined,
+    onSelect,
+    onClickOutside = () => {},
+    render = String,
+  }: Props = $props();
+
+  const handleClickOutside = () => {
+    if (!controlable) {
+      showMenu = false;
+    }
+
+    onClickOutside();
+  };
+
+  const handleSelectOption = (option: T) => {
+    onSelect(option);
+    selectedOption = option;
+
+    showMenu = false;
+  };
+
+  const renderOption = (option: T): RenderedOption => {
+    const renderedOption = render(option);
+    switch (typeof renderedOption) {
+      case 'string': {
+        return { title: renderedOption };
+      }
+      default: {
+        return {
+          title: renderedOption.title,
+          icon: renderedOption.icon,
+          disabled: renderedOption.disabled,
+        };
+      }
+    }
+  };
+
+  let renderedSelectedOption = $derived(renderOption(selectedOption));
+</script>
+
+<div use:clickOutside={{ onOutclick: handleClickOutside, onEscape: handleClickOutside }}>
+  <!-- BUTTON TITLE -->
+  <Button onclick={() => (showMenu = true)} fullWidth {title} variant="ghost" color="secondary" size="small">
+    {#if renderedSelectedOption?.icon}
+      <Icon path={renderedSelectedOption.icon} />
+    {/if}
+    <Text class={hideTextOnSmallScreen ? 'hidden sm:block' : ''}>{renderedSelectedOption.title}</Text>
+  </Button>
+
+  <!-- DROP DOWN MENU -->
+  {#if showMenu}
+    <div
+      transition:fly={{ y: -30, duration: 250 }}
+      class="text-sm font-medium fixed z-50 flex min-w-[250px] max-h-[70vh] overflow-y-auto immich-scrollbar flex-col rounded-2xl bg-gray-100 py-2 text-black shadow-lg dark:bg-gray-700 dark:text-white {className}"
+    >
+      {#each options as option (option)}
+        {@const renderedOption = renderOption(option)}
+        {@const buttonStyle = renderedOption.disabled ? '' : 'transition-all hover:bg-gray-300 dark:hover:bg-gray-800'}
+        <button
+          type="button"
+          class="grid grid-cols-[36px,1fr] place-items-center p-2 disabled:opacity-40 {buttonStyle}"
+          disabled={renderedOption.disabled}
+          onclick={() => !renderedOption.disabled && handleSelectOption(option)}
+        >
+          {#if isEqual(selectedOption, option)}
+            <div class="text-immich-primary dark:text-immich-dark-primary">
+              <Icon path={mdiCheck} />
+            </div>
+            <p class="justify-self-start text-immich-primary dark:text-immich-dark-primary">
+              {renderedOption.title}
+            </p>
+          {:else}
+            <div></div>
+            <p class="justify-self-start">
+              {renderedOption.title}
+            </p>
+          {/if}
+        </button>
+      {/each}
+    </div>
+  {/if}
 </div>

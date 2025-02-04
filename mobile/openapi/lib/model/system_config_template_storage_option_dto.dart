@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,18 +13,15 @@ part of openapi.api;
 class SystemConfigTemplateStorageOptionDto {
   /// Returns a new [SystemConfigTemplateStorageOptionDto] instance.
   SystemConfigTemplateStorageOptionDto({
-    this.yearOptions = const [],
-    this.monthOptions = const [],
     this.dayOptions = const [],
     this.hourOptions = const [],
     this.minuteOptions = const [],
-    this.secondOptions = const [],
+    this.monthOptions = const [],
     this.presetOptions = const [],
+    this.secondOptions = const [],
+    this.weekOptions = const [],
+    this.yearOptions = const [],
   });
-
-  List<String> yearOptions;
-
-  List<String> monthOptions;
 
   List<String> dayOptions;
 
@@ -32,43 +29,52 @@ class SystemConfigTemplateStorageOptionDto {
 
   List<String> minuteOptions;
 
-  List<String> secondOptions;
+  List<String> monthOptions;
 
   List<String> presetOptions;
 
+  List<String> secondOptions;
+
+  List<String> weekOptions;
+
+  List<String> yearOptions;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigTemplateStorageOptionDto &&
-     other.yearOptions == yearOptions &&
-     other.monthOptions == monthOptions &&
-     other.dayOptions == dayOptions &&
-     other.hourOptions == hourOptions &&
-     other.minuteOptions == minuteOptions &&
-     other.secondOptions == secondOptions &&
-     other.presetOptions == presetOptions;
+    _deepEquality.equals(other.dayOptions, dayOptions) &&
+    _deepEquality.equals(other.hourOptions, hourOptions) &&
+    _deepEquality.equals(other.minuteOptions, minuteOptions) &&
+    _deepEquality.equals(other.monthOptions, monthOptions) &&
+    _deepEquality.equals(other.presetOptions, presetOptions) &&
+    _deepEquality.equals(other.secondOptions, secondOptions) &&
+    _deepEquality.equals(other.weekOptions, weekOptions) &&
+    _deepEquality.equals(other.yearOptions, yearOptions);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (yearOptions.hashCode) +
-    (monthOptions.hashCode) +
     (dayOptions.hashCode) +
     (hourOptions.hashCode) +
     (minuteOptions.hashCode) +
+    (monthOptions.hashCode) +
+    (presetOptions.hashCode) +
     (secondOptions.hashCode) +
-    (presetOptions.hashCode);
+    (weekOptions.hashCode) +
+    (yearOptions.hashCode);
 
   @override
-  String toString() => 'SystemConfigTemplateStorageOptionDto[yearOptions=$yearOptions, monthOptions=$monthOptions, dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, secondOptions=$secondOptions, presetOptions=$presetOptions]';
+  String toString() => 'SystemConfigTemplateStorageOptionDto[dayOptions=$dayOptions, hourOptions=$hourOptions, minuteOptions=$minuteOptions, monthOptions=$monthOptions, presetOptions=$presetOptions, secondOptions=$secondOptions, weekOptions=$weekOptions, yearOptions=$yearOptions]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'yearOptions'] = this.yearOptions;
-      json[r'monthOptions'] = this.monthOptions;
       json[r'dayOptions'] = this.dayOptions;
       json[r'hourOptions'] = this.hourOptions;
       json[r'minuteOptions'] = this.minuteOptions;
-      json[r'secondOptions'] = this.secondOptions;
+      json[r'monthOptions'] = this.monthOptions;
       json[r'presetOptions'] = this.presetOptions;
+      json[r'secondOptions'] = this.secondOptions;
+      json[r'weekOptions'] = this.weekOptions;
+      json[r'yearOptions'] = this.yearOptions;
     return json;
   }
 
@@ -76,16 +82,11 @@ class SystemConfigTemplateStorageOptionDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigTemplateStorageOptionDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigTemplateStorageOptionDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigTemplateStorageOptionDto(
-        yearOptions: json[r'yearOptions'] is Iterable
-            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        monthOptions: json[r'monthOptions'] is Iterable
-            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
         dayOptions: json[r'dayOptions'] is Iterable
             ? (json[r'dayOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
@@ -95,11 +96,20 @@ class SystemConfigTemplateStorageOptionDto {
         minuteOptions: json[r'minuteOptions'] is Iterable
             ? (json[r'minuteOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        secondOptions: json[r'secondOptions'] is Iterable
-            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
+        monthOptions: json[r'monthOptions'] is Iterable
+            ? (json[r'monthOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
         presetOptions: json[r'presetOptions'] is Iterable
             ? (json[r'presetOptions'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        secondOptions: json[r'secondOptions'] is Iterable
+            ? (json[r'secondOptions'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        weekOptions: json[r'weekOptions'] is Iterable
+            ? (json[r'weekOptions'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
+        yearOptions: json[r'yearOptions'] is Iterable
+            ? (json[r'yearOptions'] as Iterable).cast<String>().toList(growable: false)
             : const [],
       );
     }
@@ -148,13 +158,14 @@ class SystemConfigTemplateStorageOptionDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'yearOptions',
-    'monthOptions',
     'dayOptions',
     'hourOptions',
     'minuteOptions',
-    'secondOptions',
+    'monthOptions',
     'presetOptions',
+    'secondOptions',
+    'weekOptions',
+    'yearOptions',
   };
 }
 

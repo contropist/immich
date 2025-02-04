@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,32 +13,32 @@ part of openapi.api;
 class SearchExploreItem {
   /// Returns a new [SearchExploreItem] instance.
   SearchExploreItem({
-    required this.value,
     required this.data,
+    required this.value,
   });
-
-  String value;
 
   AssetResponseDto data;
 
+  String value;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchExploreItem &&
-     other.value == value &&
-     other.data == data;
+    other.data == data &&
+    other.value == value;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (value.hashCode) +
-    (data.hashCode);
+    (data.hashCode) +
+    (value.hashCode);
 
   @override
-  String toString() => 'SearchExploreItem[value=$value, data=$data]';
+  String toString() => 'SearchExploreItem[data=$data, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'value'] = this.value;
       json[r'data'] = this.data;
+      json[r'value'] = this.value;
     return json;
   }
 
@@ -46,12 +46,13 @@ class SearchExploreItem {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchExploreItem? fromJson(dynamic value) {
+    upgradeDto(value, "SearchExploreItem");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SearchExploreItem(
-        value: mapValueOfType<String>(json, r'value')!,
         data: AssetResponseDto.fromJson(json[r'data'])!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;
@@ -99,8 +100,8 @@ class SearchExploreItem {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'value',
     'data',
+    'value',
   };
 }
 

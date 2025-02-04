@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,25 +13,37 @@ part of openapi.api;
 class SystemConfigStorageTemplateDto {
   /// Returns a new [SystemConfigStorageTemplateDto] instance.
   SystemConfigStorageTemplateDto({
+    required this.enabled,
+    required this.hashVerificationEnabled,
     required this.template,
   });
+
+  bool enabled;
+
+  bool hashVerificationEnabled;
 
   String template;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigStorageTemplateDto &&
-     other.template == template;
+    other.enabled == enabled &&
+    other.hashVerificationEnabled == hashVerificationEnabled &&
+    other.template == template;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (enabled.hashCode) +
+    (hashVerificationEnabled.hashCode) +
     (template.hashCode);
 
   @override
-  String toString() => 'SystemConfigStorageTemplateDto[template=$template]';
+  String toString() => 'SystemConfigStorageTemplateDto[enabled=$enabled, hashVerificationEnabled=$hashVerificationEnabled, template=$template]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'enabled'] = this.enabled;
+      json[r'hashVerificationEnabled'] = this.hashVerificationEnabled;
       json[r'template'] = this.template;
     return json;
   }
@@ -40,10 +52,13 @@ class SystemConfigStorageTemplateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigStorageTemplateDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigStorageTemplateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigStorageTemplateDto(
+        enabled: mapValueOfType<bool>(json, r'enabled')!,
+        hashVerificationEnabled: mapValueOfType<bool>(json, r'hashVerificationEnabled')!,
         template: mapValueOfType<String>(json, r'template')!,
       );
     }
@@ -92,6 +107,8 @@ class SystemConfigStorageTemplateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'enabled',
+    'hashVerificationEnabled',
     'template',
   };
 }

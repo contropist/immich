@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,17 +13,14 @@ part of openapi.api;
 class AssetBulkUploadCheckResult {
   /// Returns a new [AssetBulkUploadCheckResult] instance.
   AssetBulkUploadCheckResult({
-    required this.id,
     required this.action,
-    this.reason,
     this.assetId,
+    required this.id,
+    this.isTrashed,
+    this.reason,
   });
 
-  String id;
-
   AssetBulkUploadCheckResultActionEnum action;
-
-  AssetBulkUploadCheckResultReasonEnum? reason;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -33,37 +30,56 @@ class AssetBulkUploadCheckResult {
   ///
   String? assetId;
 
+  String id;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isTrashed;
+
+  AssetBulkUploadCheckResultReasonEnum? reason;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
-     other.id == id &&
-     other.action == action &&
-     other.reason == reason &&
-     other.assetId == assetId;
+    other.action == action &&
+    other.assetId == assetId &&
+    other.id == id &&
+    other.isTrashed == isTrashed &&
+    other.reason == reason;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (action.hashCode) +
-    (reason == null ? 0 : reason!.hashCode) +
-    (assetId == null ? 0 : assetId!.hashCode);
+    (assetId == null ? 0 : assetId!.hashCode) +
+    (id.hashCode) +
+    (isTrashed == null ? 0 : isTrashed!.hashCode) +
+    (reason == null ? 0 : reason!.hashCode);
 
   @override
-  String toString() => 'AssetBulkUploadCheckResult[id=$id, action=$action, reason=$reason, assetId=$assetId]';
+  String toString() => 'AssetBulkUploadCheckResult[action=$action, assetId=$assetId, id=$id, isTrashed=$isTrashed, reason=$reason]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'action'] = this.action;
-    if (this.reason != null) {
-      json[r'reason'] = this.reason;
-    } else {
-    //  json[r'reason'] = null;
-    }
     if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
     } else {
     //  json[r'assetId'] = null;
+    }
+      json[r'id'] = this.id;
+    if (this.isTrashed != null) {
+      json[r'isTrashed'] = this.isTrashed;
+    } else {
+    //  json[r'isTrashed'] = null;
+    }
+    if (this.reason != null) {
+      json[r'reason'] = this.reason;
+    } else {
+    //  json[r'reason'] = null;
     }
     return json;
   }
@@ -72,14 +88,16 @@ class AssetBulkUploadCheckResult {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetBulkUploadCheckResult? fromJson(dynamic value) {
+    upgradeDto(value, "AssetBulkUploadCheckResult");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUploadCheckResult(
-        id: mapValueOfType<String>(json, r'id')!,
         action: AssetBulkUploadCheckResultActionEnum.fromJson(json[r'action'])!,
-        reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
         assetId: mapValueOfType<String>(json, r'assetId'),
+        id: mapValueOfType<String>(json, r'id')!,
+        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
+        reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
       );
     }
     return null;
@@ -127,8 +145,8 @@ class AssetBulkUploadCheckResult {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'action',
+    'id',
   };
 }
 
@@ -156,7 +174,7 @@ class AssetBulkUploadCheckResultActionEnum {
 
   static AssetBulkUploadCheckResultActionEnum? fromJson(dynamic value) => AssetBulkUploadCheckResultActionEnumTypeTransformer().decode(value);
 
-  static List<AssetBulkUploadCheckResultActionEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetBulkUploadCheckResultActionEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetBulkUploadCheckResultActionEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -230,7 +248,7 @@ class AssetBulkUploadCheckResultReasonEnum {
 
   static AssetBulkUploadCheckResultReasonEnum? fromJson(dynamic value) => AssetBulkUploadCheckResultReasonEnumTypeTransformer().decode(value);
 
-  static List<AssetBulkUploadCheckResultReasonEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetBulkUploadCheckResultReasonEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetBulkUploadCheckResultReasonEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

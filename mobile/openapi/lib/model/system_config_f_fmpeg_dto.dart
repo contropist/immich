@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,74 +13,154 @@ part of openapi.api;
 class SystemConfigFFmpegDto {
   /// Returns a new [SystemConfigFFmpegDto] instance.
   SystemConfigFFmpegDto({
+    required this.accel,
+    required this.accelDecode,
+    this.acceptedAudioCodecs = const [],
+    this.acceptedContainers = const [],
+    this.acceptedVideoCodecs = const [],
+    required this.bframes,
+    required this.cqMode,
     required this.crf,
-    required this.threads,
+    required this.gopSize,
+    required this.maxBitrate,
+    required this.preferredHwDevice,
     required this.preset,
-    required this.targetVideoCodec,
+    required this.refs,
     required this.targetAudioCodec,
     required this.targetResolution,
-    required this.maxBitrate,
-    required this.twoPass,
+    required this.targetVideoCodec,
+    required this.temporalAQ,
+    required this.threads,
+    required this.tonemap,
     required this.transcode,
+    required this.twoPass,
   });
 
+  TranscodeHWAccel accel;
+
+  bool accelDecode;
+
+  List<AudioCodec> acceptedAudioCodecs;
+
+  List<VideoContainer> acceptedContainers;
+
+  List<VideoCodec> acceptedVideoCodecs;
+
+  /// Minimum value: -1
+  /// Maximum value: 16
+  int bframes;
+
+  CQMode cqMode;
+
+  /// Minimum value: 0
+  /// Maximum value: 51
   int crf;
 
-  int threads;
-
-  String preset;
-
-  String targetVideoCodec;
-
-  String targetAudioCodec;
-
-  String targetResolution;
+  /// Minimum value: 0
+  int gopSize;
 
   String maxBitrate;
 
-  bool twoPass;
+  String preferredHwDevice;
 
-  SystemConfigFFmpegDtoTranscodeEnum transcode;
+  String preset;
+
+  /// Minimum value: 0
+  /// Maximum value: 6
+  int refs;
+
+  AudioCodec targetAudioCodec;
+
+  String targetResolution;
+
+  VideoCodec targetVideoCodec;
+
+  bool temporalAQ;
+
+  /// Minimum value: 0
+  int threads;
+
+  ToneMapping tonemap;
+
+  TranscodePolicy transcode;
+
+  bool twoPass;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegDto &&
-     other.crf == crf &&
-     other.threads == threads &&
-     other.preset == preset &&
-     other.targetVideoCodec == targetVideoCodec &&
-     other.targetAudioCodec == targetAudioCodec &&
-     other.targetResolution == targetResolution &&
-     other.maxBitrate == maxBitrate &&
-     other.twoPass == twoPass &&
-     other.transcode == transcode;
+    other.accel == accel &&
+    other.accelDecode == accelDecode &&
+    _deepEquality.equals(other.acceptedAudioCodecs, acceptedAudioCodecs) &&
+    _deepEquality.equals(other.acceptedContainers, acceptedContainers) &&
+    _deepEquality.equals(other.acceptedVideoCodecs, acceptedVideoCodecs) &&
+    other.bframes == bframes &&
+    other.cqMode == cqMode &&
+    other.crf == crf &&
+    other.gopSize == gopSize &&
+    other.maxBitrate == maxBitrate &&
+    other.preferredHwDevice == preferredHwDevice &&
+    other.preset == preset &&
+    other.refs == refs &&
+    other.targetAudioCodec == targetAudioCodec &&
+    other.targetResolution == targetResolution &&
+    other.targetVideoCodec == targetVideoCodec &&
+    other.temporalAQ == temporalAQ &&
+    other.threads == threads &&
+    other.tonemap == tonemap &&
+    other.transcode == transcode &&
+    other.twoPass == twoPass;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (accel.hashCode) +
+    (accelDecode.hashCode) +
+    (acceptedAudioCodecs.hashCode) +
+    (acceptedContainers.hashCode) +
+    (acceptedVideoCodecs.hashCode) +
+    (bframes.hashCode) +
+    (cqMode.hashCode) +
     (crf.hashCode) +
-    (threads.hashCode) +
+    (gopSize.hashCode) +
+    (maxBitrate.hashCode) +
+    (preferredHwDevice.hashCode) +
     (preset.hashCode) +
-    (targetVideoCodec.hashCode) +
+    (refs.hashCode) +
     (targetAudioCodec.hashCode) +
     (targetResolution.hashCode) +
-    (maxBitrate.hashCode) +
-    (twoPass.hashCode) +
-    (transcode.hashCode);
+    (targetVideoCodec.hashCode) +
+    (temporalAQ.hashCode) +
+    (threads.hashCode) +
+    (tonemap.hashCode) +
+    (transcode.hashCode) +
+    (twoPass.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegDto[crf=$crf, threads=$threads, preset=$preset, targetVideoCodec=$targetVideoCodec, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, maxBitrate=$maxBitrate, twoPass=$twoPass, transcode=$transcode]';
+  String toString() => 'SystemConfigFFmpegDto[accel=$accel, accelDecode=$accelDecode, acceptedAudioCodecs=$acceptedAudioCodecs, acceptedContainers=$acceptedContainers, acceptedVideoCodecs=$acceptedVideoCodecs, bframes=$bframes, cqMode=$cqMode, crf=$crf, gopSize=$gopSize, maxBitrate=$maxBitrate, preferredHwDevice=$preferredHwDevice, preset=$preset, refs=$refs, targetAudioCodec=$targetAudioCodec, targetResolution=$targetResolution, targetVideoCodec=$targetVideoCodec, temporalAQ=$temporalAQ, threads=$threads, tonemap=$tonemap, transcode=$transcode, twoPass=$twoPass]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'accel'] = this.accel;
+      json[r'accelDecode'] = this.accelDecode;
+      json[r'acceptedAudioCodecs'] = this.acceptedAudioCodecs;
+      json[r'acceptedContainers'] = this.acceptedContainers;
+      json[r'acceptedVideoCodecs'] = this.acceptedVideoCodecs;
+      json[r'bframes'] = this.bframes;
+      json[r'cqMode'] = this.cqMode;
       json[r'crf'] = this.crf;
-      json[r'threads'] = this.threads;
+      json[r'gopSize'] = this.gopSize;
+      json[r'maxBitrate'] = this.maxBitrate;
+      json[r'preferredHwDevice'] = this.preferredHwDevice;
       json[r'preset'] = this.preset;
-      json[r'targetVideoCodec'] = this.targetVideoCodec;
+      json[r'refs'] = this.refs;
       json[r'targetAudioCodec'] = this.targetAudioCodec;
       json[r'targetResolution'] = this.targetResolution;
-      json[r'maxBitrate'] = this.maxBitrate;
-      json[r'twoPass'] = this.twoPass;
+      json[r'targetVideoCodec'] = this.targetVideoCodec;
+      json[r'temporalAQ'] = this.temporalAQ;
+      json[r'threads'] = this.threads;
+      json[r'tonemap'] = this.tonemap;
       json[r'transcode'] = this.transcode;
+      json[r'twoPass'] = this.twoPass;
     return json;
   }
 
@@ -88,19 +168,32 @@ class SystemConfigFFmpegDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigFFmpegDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigFFmpegDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigFFmpegDto(
+        accel: TranscodeHWAccel.fromJson(json[r'accel'])!,
+        accelDecode: mapValueOfType<bool>(json, r'accelDecode')!,
+        acceptedAudioCodecs: AudioCodec.listFromJson(json[r'acceptedAudioCodecs']),
+        acceptedContainers: VideoContainer.listFromJson(json[r'acceptedContainers']),
+        acceptedVideoCodecs: VideoCodec.listFromJson(json[r'acceptedVideoCodecs']),
+        bframes: mapValueOfType<int>(json, r'bframes')!,
+        cqMode: CQMode.fromJson(json[r'cqMode'])!,
         crf: mapValueOfType<int>(json, r'crf')!,
-        threads: mapValueOfType<int>(json, r'threads')!,
-        preset: mapValueOfType<String>(json, r'preset')!,
-        targetVideoCodec: mapValueOfType<String>(json, r'targetVideoCodec')!,
-        targetAudioCodec: mapValueOfType<String>(json, r'targetAudioCodec')!,
-        targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
+        gopSize: mapValueOfType<int>(json, r'gopSize')!,
         maxBitrate: mapValueOfType<String>(json, r'maxBitrate')!,
+        preferredHwDevice: mapValueOfType<String>(json, r'preferredHwDevice')!,
+        preset: mapValueOfType<String>(json, r'preset')!,
+        refs: mapValueOfType<int>(json, r'refs')!,
+        targetAudioCodec: AudioCodec.fromJson(json[r'targetAudioCodec'])!,
+        targetResolution: mapValueOfType<String>(json, r'targetResolution')!,
+        targetVideoCodec: VideoCodec.fromJson(json[r'targetVideoCodec'])!,
+        temporalAQ: mapValueOfType<bool>(json, r'temporalAQ')!,
+        threads: mapValueOfType<int>(json, r'threads')!,
+        tonemap: ToneMapping.fromJson(json[r'tonemap'])!,
+        transcode: TranscodePolicy.fromJson(json[r'transcode'])!,
         twoPass: mapValueOfType<bool>(json, r'twoPass')!,
-        transcode: SystemConfigFFmpegDtoTranscodeEnum.fromJson(json[r'transcode'])!,
       );
     }
     return null;
@@ -148,95 +241,27 @@ class SystemConfigFFmpegDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'accel',
+    'accelDecode',
+    'acceptedAudioCodecs',
+    'acceptedContainers',
+    'acceptedVideoCodecs',
+    'bframes',
+    'cqMode',
     'crf',
-    'threads',
+    'gopSize',
+    'maxBitrate',
+    'preferredHwDevice',
     'preset',
-    'targetVideoCodec',
+    'refs',
     'targetAudioCodec',
     'targetResolution',
-    'maxBitrate',
-    'twoPass',
+    'targetVideoCodec',
+    'temporalAQ',
+    'threads',
+    'tonemap',
     'transcode',
+    'twoPass',
   };
 }
-
-
-class SystemConfigFFmpegDtoTranscodeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const SystemConfigFFmpegDtoTranscodeEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const all = SystemConfigFFmpegDtoTranscodeEnum._(r'all');
-  static const optimal = SystemConfigFFmpegDtoTranscodeEnum._(r'optimal');
-  static const required_ = SystemConfigFFmpegDtoTranscodeEnum._(r'required');
-  static const disabled = SystemConfigFFmpegDtoTranscodeEnum._(r'disabled');
-
-  /// List of all possible values in this [enum][SystemConfigFFmpegDtoTranscodeEnum].
-  static const values = <SystemConfigFFmpegDtoTranscodeEnum>[
-    all,
-    optimal,
-    required_,
-    disabled,
-  ];
-
-  static SystemConfigFFmpegDtoTranscodeEnum? fromJson(dynamic value) => SystemConfigFFmpegDtoTranscodeEnumTypeTransformer().decode(value);
-
-  static List<SystemConfigFFmpegDtoTranscodeEnum>? listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <SystemConfigFFmpegDtoTranscodeEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = SystemConfigFFmpegDtoTranscodeEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [SystemConfigFFmpegDtoTranscodeEnum] to String,
-/// and [decode] dynamic data back to [SystemConfigFFmpegDtoTranscodeEnum].
-class SystemConfigFFmpegDtoTranscodeEnumTypeTransformer {
-  factory SystemConfigFFmpegDtoTranscodeEnumTypeTransformer() => _instance ??= const SystemConfigFFmpegDtoTranscodeEnumTypeTransformer._();
-
-  const SystemConfigFFmpegDtoTranscodeEnumTypeTransformer._();
-
-  String encode(SystemConfigFFmpegDtoTranscodeEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a SystemConfigFFmpegDtoTranscodeEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  SystemConfigFFmpegDtoTranscodeEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'all': return SystemConfigFFmpegDtoTranscodeEnum.all;
-        case r'optimal': return SystemConfigFFmpegDtoTranscodeEnum.optimal;
-        case r'required': return SystemConfigFFmpegDtoTranscodeEnum.required_;
-        case r'disabled': return SystemConfigFFmpegDtoTranscodeEnum.disabled;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [SystemConfigFFmpegDtoTranscodeEnumTypeTransformer] instance.
-  static SystemConfigFFmpegDtoTranscodeEnumTypeTransformer? _instance;
-}
-
 

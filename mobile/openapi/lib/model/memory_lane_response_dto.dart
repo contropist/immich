@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,32 +13,32 @@ part of openapi.api;
 class MemoryLaneResponseDto {
   /// Returns a new [MemoryLaneResponseDto] instance.
   MemoryLaneResponseDto({
-    required this.title,
     this.assets = const [],
+    required this.yearsAgo,
   });
-
-  String title;
 
   List<AssetResponseDto> assets;
 
+  int yearsAgo;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is MemoryLaneResponseDto &&
-     other.title == title &&
-     other.assets == assets;
+    _deepEquality.equals(other.assets, assets) &&
+    other.yearsAgo == yearsAgo;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (title.hashCode) +
-    (assets.hashCode);
+    (assets.hashCode) +
+    (yearsAgo.hashCode);
 
   @override
-  String toString() => 'MemoryLaneResponseDto[title=$title, assets=$assets]';
+  String toString() => 'MemoryLaneResponseDto[assets=$assets, yearsAgo=$yearsAgo]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'title'] = this.title;
       json[r'assets'] = this.assets;
+      json[r'yearsAgo'] = this.yearsAgo;
     return json;
   }
 
@@ -46,12 +46,13 @@ class MemoryLaneResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static MemoryLaneResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "MemoryLaneResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return MemoryLaneResponseDto(
-        title: mapValueOfType<String>(json, r'title')!,
         assets: AssetResponseDto.listFromJson(json[r'assets']),
+        yearsAgo: mapValueOfType<int>(json, r'yearsAgo')!,
       );
     }
     return null;
@@ -99,8 +100,8 @@ class MemoryLaneResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'title',
     'assets',
+    'yearsAgo',
   };
 }
 

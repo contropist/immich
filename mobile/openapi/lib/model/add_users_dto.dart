@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,26 +13,26 @@ part of openapi.api;
 class AddUsersDto {
   /// Returns a new [AddUsersDto] instance.
   AddUsersDto({
-    this.sharedUserIds = const [],
+    this.albumUsers = const [],
   });
 
-  List<String> sharedUserIds;
+  List<AlbumUserAddDto> albumUsers;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AddUsersDto &&
-     other.sharedUserIds == sharedUserIds;
+    _deepEquality.equals(other.albumUsers, albumUsers);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (sharedUserIds.hashCode);
+    (albumUsers.hashCode);
 
   @override
-  String toString() => 'AddUsersDto[sharedUserIds=$sharedUserIds]';
+  String toString() => 'AddUsersDto[albumUsers=$albumUsers]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'sharedUserIds'] = this.sharedUserIds;
+      json[r'albumUsers'] = this.albumUsers;
     return json;
   }
 
@@ -40,13 +40,12 @@ class AddUsersDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AddUsersDto? fromJson(dynamic value) {
+    upgradeDto(value, "AddUsersDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AddUsersDto(
-        sharedUserIds: json[r'sharedUserIds'] is Iterable
-            ? (json[r'sharedUserIds'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
+        albumUsers: AlbumUserAddDto.listFromJson(json[r'albumUsers']),
       );
     }
     return null;
@@ -94,7 +93,7 @@ class AddUsersDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'sharedUserIds',
+    'albumUsers',
   };
 }
 

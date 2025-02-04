@@ -1,443 +1,676 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { downloadAssets } from '$lib/stores/download';
-	import {
-		AlbumResponseDto,
-		api,
-		AssetResponseDto,
-		AssetTypeEnum,
-		SharedLinkResponseDto
-	} from '@api';
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import ChevronLeft from 'svelte-material-icons/ChevronLeft.svelte';
-	import ChevronRight from 'svelte-material-icons/ChevronRight.svelte';
-	import ImageBrokenVariant from 'svelte-material-icons/ImageBrokenVariant.svelte';
-	import { fly } from 'svelte/transition';
-	import AlbumSelectionModal from '../shared-components/album-selection-modal.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
-	import DetailPanel from './detail-panel.svelte';
-	import PhotoViewer from './photo-viewer.svelte';
-	import VideoViewer from './video-viewer.svelte';
+  import { focusTrap } from '$lib/actions/focus-trap';
+  import type { Action, OnAction } from '$lib/components/asset-viewer/actions/action';
+  import MotionPhotoAction from '$lib/components/asset-viewer/actions/motion-photo-action.svelte';
+  import NextAssetAction from '$lib/components/asset-viewer/actions/next-asset-action.svelte';
+  import PreviousAssetAction from '$lib/components/asset-viewer/actions/previous-asset-action.svelte';
+  import { AssetAction, ProjectionType } from '$lib/constants';
+  import { updateNumberOfComments } from '$lib/stores/activity.store';
+  import { closeEditorCofirm } from '$lib/stores/asset-editor.store';
+  import { assetViewingStore } from '$lib/stores/asset-viewing.store';
+  import { isShowDetail } from '$lib/stores/preferences.store';
+  import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
+  import { user } from '$lib/stores/user.store';
+  import { websocketEvents } from '$lib/stores/websocket';
+  import { getAssetJobMessage, getSharedLink, handlePromiseError, isSharedLink } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SlideshowHistory } from '$lib/utils/slideshow-history';
+  import {
+    AssetJobName,
+    AssetTypeEnum,
+    ReactionType,
+    createActivity,
+    deleteActivity,
+    getActivities,
+    getActivityStatistics,
+    getAllAlbums,
+    getStack,
+    runAssetJobs,
+    type ActivityResponseDto,
+    type AlbumResponseDto,
+    type AssetResponseDto,
+    type PersonResponseDto,
+    type StackResponseDto,
+  } from '@immich/sdk';
+  import { onDestroy, onMount, untrack } from 'svelte';
+  import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
+  import Thumbnail from '../assets/thumbnail/thumbnail.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import ActivityStatus from './activity-status.svelte';
+  import ActivityViewer from './activity-viewer.svelte';
+  import AssetViewerNavBar from './asset-viewer-nav-bar.svelte';
+  import DetailPanel from './detail-panel.svelte';
+  import CropArea from './editor/crop-tool/crop-area.svelte';
+  import EditorPanel from './editor/editor-panel.svelte';
+  import PhotoViewer from './photo-viewer.svelte';
+  import SlideshowBar from './slideshow-bar.svelte';
+  import VideoViewer from './video-wrapper-viewer.svelte';
+  import ImagePanoramaViewer from './image-panorama-viewer.svelte';
 
-	import { assetStore } from '$lib/stores/assets.store';
-	import { addAssetsToAlbum, getFilenameExtension } from '$lib/utils/asset-utils';
-	import { browser } from '$app/environment';
+  type HasAsset = boolean;
 
-	export let asset: AssetResponseDto;
-	export let publicSharedKey = '';
-	export let showNavigation = true;
-	export let sharedLink: SharedLinkResponseDto | undefined = undefined;
+  interface Props {
+    asset: AssetResponseDto;
+    preloadAssets?: AssetResponseDto[];
+    showNavigation?: boolean;
+    withStacked?: boolean;
+    isShared?: boolean;
+    album?: AlbumResponseDto | null;
+    person?: PersonResponseDto | null;
+    onAction?: OnAction | undefined;
+    reactions?: ActivityResponseDto[];
+    onClose: (dto: { asset: AssetResponseDto }) => void;
+    onNext: () => Promise<HasAsset>;
+    onPrevious: () => Promise<HasAsset>;
+    onRandom: () => Promise<AssetResponseDto | null>;
+    copyImage?: () => Promise<void>;
+  }
 
-	const dispatch = createEventDispatcher();
-	let halfLeftHover = false;
-	let halfRightHover = false;
-	let isShowDetail = false;
-	let appearsInAlbums: AlbumResponseDto[] = [];
-	let isShowAlbumPicker = false;
-	let addToSharedAlbum = true;
-	let shouldPlayMotionPhoto = false;
-	let shouldShowDownloadButton = sharedLink ? sharedLink.allowDownload : true;
-	let canCopyImagesToClipboard: boolean;
-	const onKeyboardPress = (keyInfo: KeyboardEvent) => handleKeyboardPress(keyInfo.key);
+  let {
+    asset = $bindable(),
+    preloadAssets = $bindable([]),
+    showNavigation = true,
+    withStacked = false,
+    isShared = false,
+    album = null,
+    person = null,
+    onAction = undefined,
+    reactions = $bindable([]),
+    onClose,
+    onNext,
+    onPrevious,
+    onRandom,
+    copyImage = $bindable(),
+  }: Props = $props();
 
-	onMount(async () => {
-		document.addEventListener('keydown', onKeyboardPress);
+  const { setAsset } = assetViewingStore;
+  const {
+    restartProgress: restartSlideshowProgress,
+    stopProgress: stopSlideshowProgress,
+    slideshowNavigation,
+    slideshowState,
+    slideshowTransition,
+  } = slideshowStore;
 
-		getAllAlbums();
+  let appearsInAlbums: AlbumResponseDto[] = $state([]);
+  let shouldPlayMotionPhoto = $state(false);
+  let sharedLink = getSharedLink();
+  let enableDetailPanel = asset.hasMetadata;
+  let slideshowStateUnsubscribe: () => void;
+  let shuffleSlideshowUnsubscribe: () => void;
+  let previewStackedAsset: AssetResponseDto | undefined = $state();
+  let isShowActivity = $state(false);
+  let isShowEditor = $state(false);
+  let isLiked: ActivityResponseDto | null = $state(null);
+  let numberOfComments = $state(0);
+  let fullscreenElement = $state<Element>();
+  let unsubscribes: (() => void)[] = [];
+  let selectedEditType: string = $state('');
+  let stack: StackResponseDto | null = $state(null);
 
-		// Import hack :( see https://github.com/vadimkorr/svelte-carousel/issues/27#issuecomment-851022295
-		// TODO: Move to regular import once the package correctly supports ESM.
-		const module = await import('copy-image-clipboard');
-		canCopyImagesToClipboard = module.canCopyImagesToClipboard();
-	});
+  let zoomToggle = $state(() => void 0);
 
-	onDestroy(() => {
-		if (browser) {
-			document.removeEventListener('keydown', onKeyboardPress);
-		}
-	});
+  const refreshStack = async () => {
+    if (isSharedLink()) {
+      return;
+    }
 
-	$: asset.id && getAllAlbums(); // Update the album information when the asset ID changes
+    if (asset.stack) {
+      stack = await getStack({ id: asset.stack.id });
+    }
 
-	const getAllAlbums = async () => {
-		try {
-			const { data } = await api.albumApi.getAllAlbums({ assetId: asset.id });
-			appearsInAlbums = data;
-		} catch (e) {
-			console.error('Error getting album that asset belong to', e);
-		}
-	};
+    if (!stack?.assets.some(({ id }) => id === asset.id)) {
+      stack = null;
+    }
 
-	const handleKeyboardPress = (key: string) => {
-		switch (key) {
-			case 'Escape':
-				closeViewer();
-				return;
-			case 'Delete':
-				deleteAsset();
-				return;
-			case 'i':
-				isShowDetail = !isShowDetail;
-				return;
-			case 'ArrowLeft':
-				navigateAssetBackward();
-				return;
-			case 'ArrowRight':
-				navigateAssetForward();
-				return;
-		}
-	};
+    untrack(() => {
+      if (stack && stack?.assets.length > 1) {
+        preloadAssets.push(stack.assets[1]);
+      }
+    });
+  };
 
-	const handleCloseViewer = () => {
-		isShowDetail = false;
-		closeViewer();
-	};
+  const handleAddComment = () => {
+    numberOfComments++;
+    updateNumberOfComments(1);
+  };
 
-	const closeViewer = () => {
-		dispatch('close');
-	};
+  const handleRemoveComment = () => {
+    numberOfComments--;
+    updateNumberOfComments(-1);
+  };
 
-	const navigateAssetForward = (e?: Event) => {
-		e?.stopPropagation();
-		dispatch('navigate-next');
-	};
+  const handleFavorite = async () => {
+    if (album && album.isActivityEnabled) {
+      try {
+        if (isLiked) {
+          const activityId = isLiked.id;
+          await deleteActivity({ id: activityId });
+          reactions = reactions.filter((reaction) => reaction.id !== activityId);
+          isLiked = null;
+        } else {
+          const data = await createActivity({
+            activityCreateDto: { albumId: album.id, assetId: asset.id, type: ReactionType.Like },
+          });
 
-	const navigateAssetBackward = (e?: Event) => {
-		e?.stopPropagation();
-		dispatch('navigate-previous');
-	};
+          isLiked = data;
+          reactions = [...reactions, isLiked];
+        }
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_change_favorite'));
+      }
+    }
+  };
 
-	const showDetailInfoHandler = () => {
-		isShowDetail = !isShowDetail;
-	};
+  const getFavorite = async () => {
+    if (album && $user) {
+      try {
+        const data = await getActivities({
+          userId: $user.id,
+          assetId: asset.id,
+          albumId: album.id,
+          $type: ReactionType.Like,
+        });
+        isLiked = data.length > 0 ? data[0] : null;
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_load_liked_status'));
+      }
+    }
+  };
 
-	const handleDownload = () => {
-		if (asset.livePhotoVideoId) {
-			downloadFile(asset.livePhotoVideoId, true, publicSharedKey);
-			downloadFile(asset.id, false, publicSharedKey);
-			return;
-		}
+  const getNumberOfComments = async () => {
+    if (album) {
+      try {
+        const { comments } = await getActivityStatistics({ assetId: asset.id, albumId: album.id });
+        numberOfComments = comments;
+      } catch (error) {
+        handleError(error, $t('errors.unable_to_get_comments_number'));
+      }
+    }
+  };
 
-		downloadFile(asset.id, false, publicSharedKey);
-	};
+  const onAssetUpdate = (assetUpdate: AssetResponseDto) => {
+    if (assetUpdate.id === asset.id) {
+      asset = assetUpdate;
+    }
+  };
 
-	const downloadFile = async (assetId: string, isLivePhoto: boolean, key: string) => {
-		try {
-			const imageExtension = isLivePhoto ? 'mov' : getFilenameExtension(asset.originalPath);
-			const imageFileName = asset.originalFileName + '.' + imageExtension;
+  onMount(async () => {
+    unsubscribes.push(
+      websocketEvents.on('on_upload_success', onAssetUpdate),
+      websocketEvents.on('on_asset_update', onAssetUpdate),
+    );
 
-			// If assets is already download -> return;
-			if ($downloadAssets[imageFileName]) {
-				return;
-			}
+    slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
+      if (value === SlideshowState.PlaySlideshow) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset);
+        handlePromiseError(handlePlaySlideshow());
+      } else if (value === SlideshowState.StopSlideshow) {
+        handlePromiseError(handleStopSlideshow());
+      }
+    });
 
-			$downloadAssets[imageFileName] = 0;
+    shuffleSlideshowUnsubscribe = slideshowNavigation.subscribe((value) => {
+      if (value === SlideshowNavigation.Shuffle) {
+        slideshowHistory.reset();
+        slideshowHistory.queue(asset);
+      }
+    });
 
-			const { data, status } = await api.assetApi.downloadFile(
-				{ id: assetId, key },
-				{
-					responseType: 'blob',
-					onDownloadProgress: (progressEvent) => {
-						if (progressEvent.lengthComputable) {
-							const total = progressEvent.total;
-							const current = progressEvent.loaded;
-							$downloadAssets[imageFileName] = Math.floor((current / total) * 100);
-						}
-					}
-				}
-			);
+    if (!sharedLink) {
+      await handleGetAllAlbums();
+    }
+  });
 
-			if (!(data instanceof Blob)) {
-				return;
-			}
+  onDestroy(() => {
+    if (slideshowStateUnsubscribe) {
+      slideshowStateUnsubscribe();
+    }
 
-			if (status === 200) {
-				const fileUrl = URL.createObjectURL(data);
-				const anchor = document.createElement('a');
-				anchor.href = fileUrl;
-				anchor.download = imageFileName;
+    if (shuffleSlideshowUnsubscribe) {
+      shuffleSlideshowUnsubscribe();
+    }
 
-				document.body.appendChild(anchor);
-				anchor.click();
-				document.body.removeChild(anchor);
+    for (const unsubscribe of unsubscribes) {
+      unsubscribe();
+    }
+  });
 
-				URL.revokeObjectURL(fileUrl);
+  const handleGetAllAlbums = async () => {
+    if (isSharedLink()) {
+      return;
+    }
 
-				// Remove item from download list
-				setTimeout(() => {
-					const copy = $downloadAssets;
-					delete copy[imageFileName];
-					$downloadAssets = copy;
-				}, 2000);
-			}
-		} catch (e) {
-			$downloadAssets = {};
-			console.error('Error downloading file ', e);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error downloading file, check console for more details.'
-			});
-		}
-	};
+    try {
+      appearsInAlbums = await getAllAlbums({ assetId: asset.id });
+    } catch (error) {
+      console.error('Error getting album that asset belong to', error);
+    }
+  };
 
-	const deleteAsset = async () => {
-		try {
-			if (
-				window.confirm(
-					`Caution! Are you sure you want to delete this asset? This step also deletes this asset in the album(s) to which it belongs. You can not undo this action!`
-				)
-			) {
-				const { data: deletedAssets } = await api.assetApi.deleteAsset({
-					deleteAssetDto: {
-						ids: [asset.id]
-					}
-				});
+  const handleOpenActivity = () => {
+    if ($isShowDetail) {
+      $isShowDetail = false;
+    }
+    isShowActivity = !isShowActivity;
+  };
 
-				navigateAssetForward();
+  const toggleDetailPanel = () => {
+    isShowActivity = false;
+    $isShowDetail = !$isShowDetail;
+  };
 
-				for (const asset of deletedAssets) {
-					if (asset.status == 'SUCCESS') {
-						assetStore.removeAsset(asset.id);
-					}
-				}
-			}
-		} catch (e) {
-			notificationController.show({
-				type: NotificationType.Error,
-				message: 'Error deleting this asset, check console for more details'
-			});
-			console.error('Error deleteSelectedAssetHandler', e);
-		}
-	};
+  const closeViewer = () => {
+    onClose({ asset });
+  };
 
-	const toggleFavorite = async () => {
-		const { data } = await api.assetApi.updateAsset({
-			id: asset.id,
-			updateAssetDto: {
-				isFavorite: !asset.isFavorite
-			}
-		});
+  const closeEditor = () => {
+    closeEditorCofirm(() => {
+      isShowEditor = false;
+    });
+  };
 
-		asset.isFavorite = data.isFavorite;
-		assetStore.updateAsset(asset.id, data.isFavorite);
-	};
+  const navigateAsset = async (order?: 'previous' | 'next', e?: Event) => {
+    if (!order) {
+      if ($slideshowState === SlideshowState.PlaySlideshow) {
+        order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
+      } else {
+        return;
+      }
+    }
 
-	const openAlbumPicker = (shared: boolean) => {
-		isShowAlbumPicker = true;
-		addToSharedAlbum = shared;
-	};
+    e?.stopPropagation();
 
-	const handleAddToNewAlbum = (event: CustomEvent) => {
-		isShowAlbumPicker = false;
+    let hasNext = false;
 
-		const { albumName }: { albumName: string } = event.detail;
-		api.albumApi
-			.createAlbum({ createAlbumDto: { albumName, assetIds: [asset.id] } })
-			.then((response) => {
-				const album = response.data;
-				goto('/albums/' + album.id);
-			});
-	};
+    if ($slideshowState === SlideshowState.PlaySlideshow && $slideshowNavigation === SlideshowNavigation.Shuffle) {
+      hasNext = order === 'previous' ? slideshowHistory.previous() : slideshowHistory.next();
+      if (!hasNext) {
+        const asset = await onRandom();
+        if (asset) {
+          slideshowHistory.queue(asset);
+          hasNext = true;
+        }
+      }
+    } else {
+      hasNext = order === 'previous' ? await onPrevious() : await onNext();
+    }
 
-	const handleAddToAlbum = async (event: CustomEvent<{ album: AlbumResponseDto }>) => {
-		isShowAlbumPicker = false;
-		const album = event.detail.album;
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      if (hasNext) {
+        $restartSlideshowProgress = true;
+      } else {
+        await handleStopSlideshow();
+      }
+    }
+  };
 
-		addAssetsToAlbum(album.id, [asset.id]).then((dto) => {
-			if (dto.successfullyAdded === 1 && dto.album) {
-				appearsInAlbums = [...appearsInAlbums, dto.album];
-			}
-		});
-	};
+  // const showEditorHandler = () => {
+  //   if (isShowActivity) {
+  //     isShowActivity = false;
+  //   }
+  //   isShowEditor = !isShowEditor;
+  // };
 
-	const disableKeyDownEvent = () => {
-		if (browser) {
-			document.removeEventListener('keydown', onKeyboardPress);
-		}
-	};
+  const handleRunJob = async (name: AssetJobName) => {
+    try {
+      await runAssetJobs({ assetJobsDto: { assetIds: [asset.id], name } });
+      notificationController.show({ type: NotificationType.Info, message: $getAssetJobMessage(name) });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_submit_job'));
+    }
+  };
 
-	const enableKeyDownEvent = () => {
-		if (browser) {
-			document.addEventListener('keydown', onKeyboardPress);
-		}
-	};
+  /**
+   * Slide show mode
+   */
 
-	const toggleArchive = async () => {
-		try {
-			const { data } = await api.assetApi.updateAsset({
-				id: asset.id,
-				updateAssetDto: {
-					isArchived: !asset.isArchived
-				}
-			});
+  let assetViewerHtmlElement = $state<HTMLElement>();
 
-			asset.isArchived = data.isArchived;
+  const slideshowHistory = new SlideshowHistory((asset) => {
+    setAsset(asset);
+    $restartSlideshowProgress = true;
+  });
 
-			if (data.isArchived) {
-				dispatch('archived', data);
-			} else {
-				dispatch('unarchived', data);
-			}
+  const handleVideoStarted = () => {
+    if ($slideshowState === SlideshowState.PlaySlideshow) {
+      $stopSlideshowProgress = true;
+    }
+  };
 
-			notificationController.show({
-				type: NotificationType.Info,
-				message: asset.isArchived ? `Added to archive` : `Removed from archive`
-			});
-		} catch (error) {
-			console.error(error);
-			notificationController.show({
-				type: NotificationType.Error,
-				message: `Error ${
-					asset.isArchived ? 'archiving' : 'unarchiving'
-				} asset, check console for more details`
-			});
-		}
-	};
+  const handlePlaySlideshow = async () => {
+    try {
+      await assetViewerHtmlElement?.requestFullscreen?.();
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_enter_fullscreen'));
+      $slideshowState = SlideshowState.StopSlideshow;
+    }
+  };
+
+  const handleStopSlideshow = async () => {
+    try {
+      if (document.fullscreenElement) {
+        document.body.style.cursor = '';
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_exit_fullscreen'));
+    } finally {
+      $stopSlideshowProgress = true;
+      $slideshowState = SlideshowState.None;
+    }
+  };
+
+  const handleStackedAssetMouseEvent = (isMouseOver: boolean, asset: AssetResponseDto) => {
+    previewStackedAsset = isMouseOver ? asset : undefined;
+  };
+
+  const handleAction = async (action: Action) => {
+    switch (action.type) {
+      case AssetAction.ADD_TO_ALBUM: {
+        await handleGetAllAlbums();
+        break;
+      }
+
+      case AssetAction.KEEP_THIS_DELETE_OTHERS:
+      case AssetAction.UNSTACK: {
+        closeViewer();
+      }
+    }
+
+    onAction?.(action);
+  };
+
+  const handleUpdateSelectedEditType = (type: string) => {
+    selectedEditType = type;
+  };
+  let isFullScreen = $derived(fullscreenElement !== null);
+  $effect(() => {
+    if (asset) {
+      previewStackedAsset = undefined;
+      handlePromiseError(refreshStack());
+    }
+  });
+  $effect(() => {
+    if (album && !album.isActivityEnabled && numberOfComments === 0) {
+      isShowActivity = false;
+    }
+  });
+  $effect(() => {
+    if (isShared && asset.id) {
+      handlePromiseError(getFavorite());
+      handlePromiseError(getNumberOfComments());
+    }
+  });
+  $effect(() => {
+    if (asset.id && !sharedLink) {
+      handlePromiseError(handleGetAllAlbums());
+    }
+  });
 </script>
 
+<svelte:document bind:fullscreenElement />
+
 <section
-	id="immich-asset-viewer"
-	class="fixed h-screen w-screen left-0 top-0 overflow-y-hidden bg-black z-[1001] grid grid-rows-[64px_1fr] grid-cols-4"
+  id="immich-asset-viewer"
+  class="fixed left-0 top-0 z-[1001] grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  use:focusTrap
 >
-	<div class="col-start-1 col-span-4 row-start-1 row-span-1 z-[1000] transition-transform">
-		<AssetViewerNavBar
-			{asset}
-			isMotionPhotoPlaying={shouldPlayMotionPhoto}
-			showCopyButton={canCopyImagesToClipboard && asset.type === AssetTypeEnum.Image}
-			showZoomButton={asset.type === AssetTypeEnum.Image}
-			showMotionPlayButton={!!asset.livePhotoVideoId}
-			showDownloadButton={shouldShowDownloadButton}
-			on:goBack={closeViewer}
-			on:showDetail={showDetailInfoHandler}
-			on:download={handleDownload}
-			on:delete={deleteAsset}
-			on:favorite={toggleFavorite}
-			on:addToAlbum={() => openAlbumPicker(false)}
-			on:addToSharedAlbum={() => openAlbumPicker(true)}
-			on:playMotionPhoto={() => (shouldPlayMotionPhoto = true)}
-			on:stopMotionPhoto={() => (shouldPlayMotionPhoto = false)}
-			on:toggleArchive={toggleArchive}
-		/>
-	</div>
+  <!-- Top navigation bar -->
+  {#if $slideshowState === SlideshowState.None && !isShowEditor}
+    <div class="z-[1002] col-span-4 col-start-1 row-span-1 row-start-1 transition-transform">
+      <AssetViewerNavBar
+        {asset}
+        {album}
+        {person}
+        {stack}
+        showDetailButton={enableDetailPanel}
+        showSlideshow={true}
+        onZoomImage={zoomToggle}
+        onCopyImage={copyImage}
+        onAction={handleAction}
+        onRunJob={handleRunJob}
+        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
+        onShowDetail={toggleDetailPanel}
+        onClose={closeViewer}
+      >
+        {#snippet motionPhoto()}
+          <MotionPhotoAction
+            isPlaying={shouldPlayMotionPhoto}
+            onClick={(shouldPlay) => (shouldPlayMotionPhoto = shouldPlay)}
+          />
+        {/snippet}
+      </AssetViewerNavBar>
+    </div>
+  {/if}
 
-	{#if showNavigation}
-		<div
-			class={`row-start-2 row-span-end col-start-1 flex place-items-center hover:cursor-pointer w-1/4 mb-[60px] ${
-				asset.type === AssetTypeEnum.Video ? '' : 'z-[999]'
-			}`}
-			on:mouseenter={() => {
-				halfLeftHover = true;
-				halfRightHover = false;
-			}}
-			on:mouseleave={() => {
-				halfLeftHover = false;
-			}}
-			on:click={navigateAssetBackward}
-			on:keydown={navigateAssetBackward}
-		>
-			<button
-				class="rounded-full p-3 hover:bg-gray-500 hover:text-gray-700 z-[1000] text-gray-500 mx-4"
-				class:navigation-button-hover={halfLeftHover}
-				on:click={navigateAssetBackward}
-			>
-				<ChevronLeft size="36" />
-			</button>
-		</div>
-	{/if}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+    <div class="z-[1001] my-auto column-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+      <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
+    </div>
+  {/if}
 
-	<div class="row-start-1 row-span-full col-start-1 col-span-4">
-		{#key asset.id}
-			{#if !asset.resized}
-				<div class="h-full w-full flex justify-center">
-					<div
-						class="h-full bg-gray-100 dark:bg-immich-dark-gray flex items-center justify-center aspect-square px-auto"
-					>
-						<ImageBrokenVariant size="25%" />
-					</div>
-				</div>
-			{:else if asset.type === AssetTypeEnum.Image}
-				{#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
-					<VideoViewer
-						{publicSharedKey}
-						assetId={asset.livePhotoVideoId}
-						on:close={closeViewer}
-						on:onVideoEnded={() => (shouldPlayMotionPhoto = false)}
-					/>
-				{:else}
-					<PhotoViewer {publicSharedKey} {asset} on:close={closeViewer} />
-				{/if}
-			{:else}
-				<VideoViewer {publicSharedKey} assetId={asset.id} on:close={closeViewer} />
-			{/if}
-		{/key}
-	</div>
+  <!-- Asset Viewer -->
+  <div class="z-[1000] relative col-start-1 col-span-4 row-start-1 row-span-full" bind:this={assetViewerHtmlElement}>
+    {#if $slideshowState != SlideshowState.None}
+      <div class="z-[1000] absolute w-full flex">
+        <SlideshowBar
+          {isFullScreen}
+          onSetToFullScreen={() => assetViewerHtmlElement?.requestFullscreen?.()}
+          onPrevious={() => navigateAsset('previous')}
+          onNext={() => navigateAsset('next')}
+          onClose={() => ($slideshowState = SlideshowState.StopSlideshow)}
+        />
+      </div>
+    {/if}
 
-	{#if showNavigation}
-		<div
-			class={`row-start-2 row-span-full col-start-4 flex justify-end place-items-center hover:cursor-pointer w-1/4 justify-self-end mb-[60px] ${
-				asset.type === AssetTypeEnum.Video ? '' : 'z-[500]'
-			}`}
-			on:click={navigateAssetForward}
-			on:keydown={navigateAssetForward}
-			on:mouseenter={() => {
-				halfLeftHover = false;
-				halfRightHover = true;
-			}}
-			on:mouseleave={() => {
-				halfRightHover = false;
-			}}
-		>
-			<button
-				class="rounded-full p-3 hover:bg-gray-500 hover:text-white text-gray-500 mx-4"
-				class:navigation-button-hover={halfRightHover}
-				on:click={navigateAssetForward}
-			>
-				<ChevronRight size="36" />
-			</button>
-		</div>
-	{/if}
+    {#if previewStackedAsset}
+      {#key previewStackedAsset.id}
+        {#if previewStackedAsset.type === AssetTypeEnum.Image}
+          <PhotoViewer
+            bind:zoomToggle
+            bind:copyImage
+            asset={previewStackedAsset}
+            {preloadAssets}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
+            haveFadeTransition={false}
+            {sharedLink}
+          />
+        {:else}
+          <VideoViewer
+            assetId={previewStackedAsset.id}
+            checksum={previewStackedAsset.checksum}
+            projectionType={previewStackedAsset.exifInfo?.projectionType}
+            loopVideo={true}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
+          />
+        {/if}
+      {/key}
+    {:else}
+      {#key asset.id}
+        {#if asset.type === AssetTypeEnum.Image}
+          {#if shouldPlayMotionPhoto && asset.livePhotoVideoId}
+            <VideoViewer
+              assetId={asset.livePhotoVideoId}
+              checksum={asset.checksum}
+              projectionType={asset.exifInfo?.projectionType}
+              loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              onVideoEnded={() => (shouldPlayMotionPhoto = false)}
+            />
+          {:else if asset.exifInfo?.projectionType === ProjectionType.EQUIRECTANGULAR || (asset.originalPath && asset.originalPath
+                .toLowerCase()
+                .endsWith('.insp'))}
+            <ImagePanoramaViewer {asset} />
+          {:else if isShowEditor && selectedEditType === 'crop'}
+            <CropArea {asset} />
+          {:else}
+            <PhotoViewer
+              bind:zoomToggle
+              bind:copyImage
+              {asset}
+              {preloadAssets}
+              onPreviousAsset={() => navigateAsset('previous')}
+              onNextAsset={() => navigateAsset('next')}
+              onClose={closeViewer}
+              {sharedLink}
+              haveFadeTransition={$slideshowState === SlideshowState.None || $slideshowTransition}
+            />
+          {/if}
+        {:else}
+          <VideoViewer
+            assetId={asset.id}
+            checksum={asset.checksum}
+            projectionType={asset.exifInfo?.projectionType}
+            loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+            onPreviousAsset={() => navigateAsset('previous')}
+            onNextAsset={() => navigateAsset('next')}
+            onClose={closeViewer}
+            onVideoEnded={() => navigateAsset()}
+            onVideoStarted={handleVideoStarted}
+          />
+        {/if}
+        {#if $slideshowState === SlideshowState.None && isShared && ((album && album.isActivityEnabled) || numberOfComments > 0)}
+          <div class="z-[9999] absolute bottom-0 right-0 mb-20 mr-8">
+            <ActivityStatus
+              disabled={!album?.isActivityEnabled}
+              {isLiked}
+              {numberOfComments}
+              onFavorite={handleFavorite}
+              onOpenActivityTab={handleOpenActivity}
+            />
+          </div>
+        {/if}
+      {/key}
+    {/if}
+  </div>
 
-	{#if isShowDetail}
-		<div
-			transition:fly={{ duration: 150 }}
-			id="detail-panel"
-			class="bg-immich-bg w-[360px] z-[1002] row-span-full transition-all overflow-y-auto dark:bg-immich-dark-bg dark:border-l dark:border-l-immich-dark-gray"
-			translate="yes"
-		>
-			<DetailPanel
-				{asset}
-				albums={appearsInAlbums}
-				on:close={() => (isShowDetail = false)}
-				on:close-viewer={handleCloseViewer}
-				on:description-focus-in={disableKeyDownEvent}
-				on:description-focus-out={enableKeyDownEvent}
-			/>
-		</div>
-	{/if}
+  {#if $slideshowState === SlideshowState.None && showNavigation && !isShowEditor}
+    <div class="z-[1001] my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
+      <NextAssetAction onNextAsset={() => navigateAsset('next')} />
+    </div>
+  {/if}
 
-	{#if isShowAlbumPicker}
-		<AlbumSelectionModal
-			shared={addToSharedAlbum}
-			on:newAlbum={handleAddToNewAlbum}
-			on:newSharedAlbum={handleAddToNewAlbum}
-			on:album={handleAddToAlbum}
-			on:close={() => (isShowAlbumPicker = false)}
-		/>
-	{/if}
+  {#if enableDetailPanel && $slideshowState === SlideshowState.None && $isShowDetail && !isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="detail-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[360px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <DetailPanel {asset} currentAlbum={album} albums={appearsInAlbums} onClose={() => ($isShowDetail = false)} />
+    </div>
+  {/if}
+
+  {#if isShowEditor}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="editor-panel"
+      class="z-[1002] row-start-1 row-span-4 w-[400px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <EditorPanel {asset} onUpdateSelectedType={handleUpdateSelectedEditType} onClose={closeEditor} />
+    </div>
+  {/if}
+
+  {#if stack && withStacked}
+    {@const stackedAssets = stack.assets}
+    <div
+      id="stack-slideshow"
+      class="z-[1002] flex place-item-center place-content-center absolute bottom-0 w-full col-span-4 col-start-1 overflow-x-auto horizontal-scrollbar"
+    >
+      <div class="relative w-full whitespace-nowrap transition-all">
+        {#each stackedAssets as stackedAsset (stackedAsset.id)}
+          <div
+            class="{stackedAsset.id == asset.id
+              ? '-translate-y-[1px]'
+              : '-translate-y-0'} inline-block px-1 transition-transform"
+          >
+            <Thumbnail
+              class="{stackedAsset.id == asset.id
+                ? 'bg-transparent border-2 border-white'
+                : 'bg-gray-700/40'} inline-block hover:bg-transparent"
+              asset={stackedAsset}
+              onClick={(stackedAsset) => {
+                asset = stackedAsset;
+              }}
+              onMouseEvent={({ isMouseOver }) => handleStackedAssetMouseEvent(isMouseOver, stackedAsset)}
+              disableMouseOver
+              readonly
+              thumbnailSize={stackedAsset.id == asset.id ? 65 : 60}
+              showStackedIcon={false}
+            />
+
+            {#if stackedAsset.id == asset.id}
+              <div class="w-full flex place-items-center place-content-center">
+                <div class="w-2 h-2 bg-white rounded-full flex mt-[2px]"></div>
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
+  {#if isShared && album && isShowActivity && $user}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="activity-panel"
+      class="z-[1002] row-start-1 row-span-5 w-[360px] md:w-[460px] overflow-y-auto bg-immich-bg transition-all dark:border-l dark:border-l-immich-dark-gray dark:bg-immich-dark-bg"
+      translate="yes"
+    >
+      <ActivityViewer
+        user={$user}
+        disabled={!album.isActivityEnabled}
+        assetType={asset.type}
+        albumOwnerId={album.ownerId}
+        albumId={album.id}
+        assetId={asset.id}
+        {isLiked}
+        bind:reactions
+        onAddComment={handleAddComment}
+        onDeleteComment={handleRemoveComment}
+        onDeleteLike={() => (isLiked = null)}
+        onClose={() => (isShowActivity = false)}
+      />
+    </div>
+  {/if}
 </section>
 
 <style>
-	#immich-asset-viewer {
-		contain: layout;
-	}
+  #immich-asset-viewer {
+    contain: layout;
+  }
 
-	.navigation-button-hover {
-		background-color: rgb(107 114 128 / var(--tw-bg-opacity));
-		color: rgb(255 255 255 / var(--tw-text-opacity));
-		transition: all 150ms;
-	}
+  .horizontal-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 10px;
+  }
+
+  /* Track */
+  .horizontal-scrollbar::-webkit-scrollbar-track {
+    background: #000000;
+    border-radius: 16px;
+  }
+
+  /* Handle */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(159, 159, 159, 0.408);
+    border-radius: 16px;
+  }
+
+  /* Handle on hover */
+  .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #adcbfa;
+    border-radius: 16px;
+  }
 </style>

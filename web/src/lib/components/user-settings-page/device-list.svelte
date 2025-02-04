@@ -1,102 +1,88 @@
 <script lang="ts">
-	import { api, AuthDeviceResponseDto } from '@api';
-	import { onMount } from 'svelte';
-	import { handleError } from '../../utils/handle-error';
-	import Button from '../elements/buttons/button.svelte';
-	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import DeviceCard from './device-card.svelte';
+  import { deleteAllSessions, deleteSession, getSessions, type SessionResponseDto } from '@immich/sdk';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import { notificationController, NotificationType } from '../shared-components/notification/notification';
+  import DeviceCard from './device-card.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
-	let devices: AuthDeviceResponseDto[] = [];
-	let deleteDevice: AuthDeviceResponseDto | null = null;
-	let deleteAll = false;
+  interface Props {
+    devices: SessionResponseDto[];
+  }
 
-	const refresh = () => api.authenticationApi.getAuthDevices().then(({ data }) => (devices = data));
+  let { devices = $bindable() }: Props = $props();
 
-	onMount(() => {
-		refresh();
-	});
+  const refresh = () => getSessions().then((_devices) => (devices = _devices));
 
-	$: currentDevice = devices.find((device) => device.current);
-	$: otherDevices = devices.filter((device) => !device.current);
+  let currentDevice = $derived(devices.find((device) => device.current));
+  let otherDevices = $derived(devices.filter((device) => !device.current));
 
-	const handleDelete = async () => {
-		if (!deleteDevice) {
-			return;
-		}
+  const handleDelete = async (device: SessionResponseDto) => {
+    const isConfirmed = await dialogController.show({
+      prompt: $t('logout_this_device_confirmation'),
+    });
 
-		try {
-			await api.authenticationApi.logoutAuthDevice({ id: deleteDevice.id });
-			notificationController.show({ message: `Logged out device`, type: NotificationType.Info });
-		} catch (error) {
-			handleError(error, 'Unable to log out device');
-		} finally {
-			await refresh();
-			deleteDevice = null;
-		}
-	};
+    if (!isConfirmed) {
+      return;
+    }
 
-	const handleDeleteAll = async () => {
-		try {
-			await api.authenticationApi.logoutAuthDevices();
-			notificationController.show({
-				message: `Logged out all devices`,
-				type: NotificationType.Info
-			});
-		} catch (error) {
-			handleError(error, 'Unable to log out all devices');
-		} finally {
-			await refresh();
-			deleteAll = false;
-		}
-	};
+    try {
+      await deleteSession({ id: device.id });
+      notificationController.show({ message: $t('logged_out_device'), type: NotificationType.Info });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_log_out_device'));
+    } finally {
+      await refresh();
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    const isConfirmed = await dialogController.show({ prompt: $t('logout_all_device_confirmation') });
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await deleteAllSessions();
+      notificationController.show({
+        message: $t('logged_out_all_devices'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_log_out_all_devices'));
+    } finally {
+      await refresh();
+    }
+  };
 </script>
 
-{#if deleteDevice}
-	<ConfirmDialogue
-		prompt="Are you sure you want to log out this device?"
-		on:confirm={() => handleDelete()}
-		on:cancel={() => (deleteDevice = null)}
-	/>
-{/if}
-
-{#if deleteAll}
-	<ConfirmDialogue
-		prompt="Are you sure you want to log out all devices?"
-		on:confirm={() => handleDeleteAll()}
-		on:cancel={() => (deleteAll = false)}
-	/>
-{/if}
-
 <section class="my-4">
-	{#if currentDevice}
-		<div class="mb-6">
-			<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
-				CURRENT DEVICE
-			</h3>
-			<DeviceCard device={currentDevice} />
-		</div>
-	{/if}
-	{#if otherDevices.length > 0}
-		<div class="mb-6">
-			<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
-				OTHER DEVICES
-			</h3>
-			{#each otherDevices as device, i}
-				<DeviceCard {device} on:delete={() => (deleteDevice = device)} />
-				{#if i !== otherDevices.length - 1}
-					<hr class="my-3" />
-				{/if}
-			{/each}
-		</div>
-		<h3 class="font-medium text-xs mb-2 text-immich-primary dark:text-immich-dark-primary">
-			LOG OUT ALL DEVICES
-		</h3>
-		<div class="flex justify-end">
-			<Button color="red" size="sm" on:click={() => (deleteAll = true)}>Log Out All Devices</Button>
-		</div>
-	{/if}
+  {#if currentDevice}
+    <div class="mb-6">
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
+        {$t('current_device').toUpperCase()}
+      </h3>
+      <DeviceCard device={currentDevice} />
+    </div>
+  {/if}
+  {#if otherDevices.length > 0}
+    <div class="mb-6">
+      <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
+        {$t('other_devices').toUpperCase()}
+      </h3>
+      {#each otherDevices as device, index}
+        <DeviceCard {device} onDelete={() => handleDelete(device)} />
+        {#if index !== otherDevices.length - 1}
+          <hr class="my-3" />
+        {/if}
+      {/each}
+    </div>
+    <h3 class="mb-2 text-xs font-medium text-immich-primary dark:text-immich-dark-primary">
+      {$t('log_out_all_devices').toUpperCase()}
+    </h3>
+    <div class="flex justify-end">
+      <Button color="red" size="sm" onclick={handleDeleteAll}>{$t('log_out_all_devices')}</Button>
+    </div>
+  {/if}
 </section>

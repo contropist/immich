@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -58,7 +58,7 @@ class SystemConfigApi {
   }
 
   /// Performs an HTTP 'GET /system-config/defaults' operation and returns the [Response].
-  Future<Response> getDefaultsWithHttpInfo() async {
+  Future<Response> getConfigDefaultsWithHttpInfo() async {
     // ignore: prefer_const_declarations
     final path = r'/system-config/defaults';
 
@@ -83,8 +83,8 @@ class SystemConfigApi {
     );
   }
 
-  Future<SystemConfigDto?> getDefaults() async {
-    final response = await getDefaultsWithHttpInfo();
+  Future<SystemConfigDto?> getConfigDefaults() async {
+    final response = await getConfigDefaultsWithHttpInfo();
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

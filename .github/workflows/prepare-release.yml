@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
     inputs:
       serverBump:
-        description: "Bump server version"
+        description: 'Bump server version'
         required: true
-        default: "false"
+        default: 'false'
         type: choice
         options:
-          - "false"
+          - 'false'
           - minor
           - patch
       mobileBump:
-        description: "Bump mobile build number"
+        description: 'Bump mobile build number'
         required: false
         type: boolean
 
@@ -29,10 +29,20 @@ jobs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
         with:
-          token: ${{ secrets.ORG_RELEASE_TOKEN }}
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+
+      - name: Install Poetry
+        run: pipx install poetry
 
       - name: Bump version
         run: misc/release/pump-version.sh -s "${{ inputs.serverBump }}" -m "${{ inputs.mobileBump }}"
@@ -41,10 +51,8 @@ jobs:
         id: push-tag
         uses: EndBug/add-and-commit@v9
         with:
-          author_name: Alex The Bot
-          author_email: alex.tran1502@gmail.com
-          default_author: user_info 
-          message: "Version ${{ env.IMMICH_VERSION }}"
+          default_author: github_actions
+          message: 'chore: version ${{ env.IMMICH_VERSION }}'
           tag: ${{ env.IMMICH_VERSION }}
           push: true
 
@@ -60,18 +68,25 @@ jobs:
     needs: build_mobile
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
         with:
-          token: ${{ secrets.ORG_RELEASE_TOKEN }}
+          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+      
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
 
       - name: Download APK
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: release-apk-signed
 
       - name: Create draft release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           draft: true
           tag_name: ${{ env.IMMICH_VERSION }}
@@ -80,4 +95,7 @@ jobs:
           files: |
             docker/docker-compose.yml
             docker/example.env
+            docker/hwaccel.ml.yml
+            docker/hwaccel.transcoding.yml
+            docker/prometheus.yml
             *.apk

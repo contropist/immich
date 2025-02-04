@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,56 +13,72 @@ part of openapi.api;
 class UsageByUserDto {
   /// Returns a new [UsageByUserDto] instance.
   UsageByUserDto({
-    required this.userId,
-    required this.userFirstName,
-    required this.userLastName,
     required this.photos,
-    required this.videos,
+    required this.quotaSizeInBytes,
     required this.usage,
+    required this.usagePhotos,
+    required this.usageVideos,
+    required this.userId,
+    required this.userName,
+    required this.videos,
   });
-
-  String userId;
-
-  String userFirstName;
-
-  String userLastName;
 
   int photos;
 
-  int videos;
+  int? quotaSizeInBytes;
 
   int usage;
 
+  int usagePhotos;
+
+  int usageVideos;
+
+  String userId;
+
+  String userName;
+
+  int videos;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UsageByUserDto &&
-     other.userId == userId &&
-     other.userFirstName == userFirstName &&
-     other.userLastName == userLastName &&
-     other.photos == photos &&
-     other.videos == videos &&
-     other.usage == usage;
+    other.photos == photos &&
+    other.quotaSizeInBytes == quotaSizeInBytes &&
+    other.usage == usage &&
+    other.usagePhotos == usagePhotos &&
+    other.usageVideos == usageVideos &&
+    other.userId == userId &&
+    other.userName == userName &&
+    other.videos == videos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (userId.hashCode) +
-    (userFirstName.hashCode) +
-    (userLastName.hashCode) +
     (photos.hashCode) +
-    (videos.hashCode) +
-    (usage.hashCode);
+    (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
+    (usage.hashCode) +
+    (usagePhotos.hashCode) +
+    (usageVideos.hashCode) +
+    (userId.hashCode) +
+    (userName.hashCode) +
+    (videos.hashCode);
 
   @override
-  String toString() => 'UsageByUserDto[userId=$userId, userFirstName=$userFirstName, userLastName=$userLastName, photos=$photos, videos=$videos, usage=$usage]';
+  String toString() => 'UsageByUserDto[photos=$photos, quotaSizeInBytes=$quotaSizeInBytes, usage=$usage, usagePhotos=$usagePhotos, usageVideos=$usageVideos, userId=$userId, userName=$userName, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'userId'] = this.userId;
-      json[r'userFirstName'] = this.userFirstName;
-      json[r'userLastName'] = this.userLastName;
       json[r'photos'] = this.photos;
-      json[r'videos'] = this.videos;
+    if (this.quotaSizeInBytes != null) {
+      json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
+    } else {
+    //  json[r'quotaSizeInBytes'] = null;
+    }
       json[r'usage'] = this.usage;
+      json[r'usagePhotos'] = this.usagePhotos;
+      json[r'usageVideos'] = this.usageVideos;
+      json[r'userId'] = this.userId;
+      json[r'userName'] = this.userName;
+      json[r'videos'] = this.videos;
     return json;
   }
 
@@ -70,16 +86,19 @@ class UsageByUserDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UsageByUserDto? fromJson(dynamic value) {
+    upgradeDto(value, "UsageByUserDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return UsageByUserDto(
-        userId: mapValueOfType<String>(json, r'userId')!,
-        userFirstName: mapValueOfType<String>(json, r'userFirstName')!,
-        userLastName: mapValueOfType<String>(json, r'userLastName')!,
         photos: mapValueOfType<int>(json, r'photos')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
+        quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         usage: mapValueOfType<int>(json, r'usage')!,
+        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
+        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
+        userName: mapValueOfType<String>(json, r'userName')!,
+        videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
     return null;
@@ -127,12 +146,14 @@ class UsageByUserDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'userId',
-    'userFirstName',
-    'userLastName',
     'photos',
-    'videos',
+    'quotaSizeInBytes',
     'usage',
+    'usagePhotos',
+    'usageVideos',
+    'userId',
+    'userName',
+    'videos',
   };
 }
 

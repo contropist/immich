@@ -1,254 +1,259 @@
 <script lang="ts">
-	import SettingInputField, {
-		SettingInputFieldType
-	} from '$lib/components/admin-page/settings/setting-input-field.svelte';
-	import SettingSwitch from '$lib/components/admin-page/settings/setting-switch.svelte';
-	import Button from '$lib/components/elements/buttons/button.svelte';
-	import { handleError } from '$lib/utils/handle-error';
-	import {
-		AlbumResponseDto,
-		api,
-		AssetResponseDto,
-		SharedLinkResponseDto,
-		SharedLinkType
-	} from '@api';
-	import { createEventDispatcher, onMount } from 'svelte';
-	import Link from 'svelte-material-icons/Link.svelte';
-	import BaseModal from '../base-modal.svelte';
-	import type { ImmichDropDownOption } from '../dropdown-button.svelte';
-	import DropdownButton from '../dropdown-button.svelte';
-	import { notificationController, NotificationType } from '../notification/notification';
+  import Button from '$lib/components/elements/buttons/button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import { SettingInputFieldType } from '$lib/constants';
+  import { locale } from '$lib/stores/preferences.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { copyToClipboard, makeSharedLinkUrl } from '$lib/utils';
+  import { handleError } from '$lib/utils/handle-error';
+  import { SharedLinkType, createSharedLink, updateSharedLink, type SharedLinkResponseDto } from '@immich/sdk';
+  import { HStack, IconButton, Input } from '@immich/ui';
+  import { mdiContentCopy, mdiLink } from '@mdi/js';
+  import { DateTime, Duration } from 'luxon';
+  import { t } from 'svelte-i18n';
+  import { NotificationType, notificationController } from '../notification/notification';
+  import SettingInputField from '../settings/setting-input-field.svelte';
+  import SettingSwitch from '../settings/setting-switch.svelte';
 
-	export let shareType: SharedLinkType;
-	export let sharedAssets: AssetResponseDto[] = [];
-	export let album: AlbumResponseDto | undefined = undefined;
-	export let editingLink: SharedLinkResponseDto | undefined = undefined;
+  interface Props {
+    onClose: () => void;
+    albumId?: string | undefined;
+    assetIds?: string[];
+    editingLink?: SharedLinkResponseDto | undefined;
+    onCreated?: () => void;
+  }
 
-	let sharedLink: string | null = null;
-	let description = '';
-	let allowDownload = true;
-	let allowUpload = false;
-	let showExif = true;
-	let expirationTime = '';
-	let shouldChangeExpirationTime = false;
+  let {
+    onClose,
+    albumId = $bindable(undefined),
+    assetIds = $bindable([]),
+    editingLink = undefined,
+    onCreated = () => {},
+  }: Props = $props();
 
-	const dispatch = createEventDispatcher();
+  let sharedLink: string | null = $state(null);
+  let description = $state('');
+  let allowDownload = $state(true);
+  let allowUpload = $state(false);
+  let showMetadata = $state(true);
+  let expirationOption: number = $state(0);
+  let password = $state('');
+  let shouldChangeExpirationTime = $state(false);
+  let enablePassword = $state(false);
 
-	const expiredDateOption: ImmichDropDownOption = {
-		default: 'Never',
-		options: ['Never', '30 minutes', '1 hour', '6 hours', '1 day', '7 days', '30 days']
-	};
+  const expirationOptions: [number, Intl.RelativeTimeFormatUnit][] = [
+    [30, 'minutes'],
+    [1, 'hour'],
+    [6, 'hours'],
+    [1, 'day'],
+    [7, 'days'],
+    [30, 'days'],
+    [3, 'months'],
+    [1, 'year'],
+  ];
 
-	onMount(() => {
-		if (editingLink) {
-			if (editingLink.description) {
-				description = editingLink.description;
-			}
-			allowUpload = editingLink.allowUpload;
-			allowDownload = editingLink.allowDownload;
-			showExif = editingLink.showExif;
-		}
-	});
+  let relativeTime = $derived(new Intl.RelativeTimeFormat($locale));
+  let expiredDateOptions = $derived([
+    { text: $t('never'), value: 0 },
+    ...expirationOptions.map(([value, unit]) => ({
+      text: relativeTime.format(value, unit),
+      value: Duration.fromObject({ [unit]: value }).toMillis(),
+    })),
+  ]);
 
-	const handleCreateSharedLink = async () => {
-		const expirationTime = getExpirationTimeInMillisecond();
-		const currentTime = new Date().getTime();
-		const expirationDate = expirationTime
-			? new Date(currentTime + expirationTime).toISOString()
-			: undefined;
+  let shareType = $derived(albumId ? SharedLinkType.Album : SharedLinkType.Individual);
 
-		try {
-			const { data } = await api.sharedLinkApi.createSharedLink({
-				sharedLinkCreateDto: {
-					type: shareType,
-					albumId: album ? album.id : undefined,
-					assetIds: sharedAssets.map((a) => a.id),
-					expiresAt: expirationDate,
-					allowUpload,
-					description,
-					allowDownload,
-					showExif
-				}
-			});
-			sharedLink = `${window.location.origin}/share/${data.key}`;
-		} catch (e) {
-			handleError(e, 'Failed to create shared link');
-		}
-	};
+  $effect(() => {
+    if (!showMetadata) {
+      allowDownload = false;
+    }
+  });
 
-	const handleCopy = async () => {
-		if (!sharedLink) {
-			return;
-		}
+  if (editingLink) {
+    if (editingLink.description) {
+      description = editingLink.description;
+    }
+    if (editingLink.password) {
+      password = editingLink.password;
+    }
+    allowUpload = editingLink.allowUpload;
+    allowDownload = editingLink.allowDownload;
+    showMetadata = editingLink.showMetadata;
 
-		try {
-			await navigator.clipboard.writeText(sharedLink);
-			notificationController.show({ message: 'Copied to clipboard!', type: NotificationType.Info });
-		} catch (e) {
-			handleError(
-				e,
-				'Cannot copy to clipboard, make sure you are accessing the page through https'
-			);
-		}
-	};
+    albumId = editingLink.album?.id;
+    assetIds = editingLink.assets.map(({ id }) => id);
 
-	const getExpirationTimeInMillisecond = () => {
-		switch (expirationTime) {
-			case '30 minutes':
-				return 30 * 60 * 1000;
-			case '1 hour':
-				return 60 * 60 * 1000;
-			case '6 hours':
-				return 6 * 60 * 60 * 1000;
-			case '1 day':
-				return 24 * 60 * 60 * 1000;
-			case '7 days':
-				return 7 * 24 * 60 * 60 * 1000;
-			case '30 days':
-				return 30 * 24 * 60 * 60 * 1000;
-			default:
-				return 0;
-		}
-	};
+    enablePassword = !!editingLink.password;
+  }
 
-	const handleEditLink = async () => {
-		if (!editingLink) {
-			return;
-		}
+  const handleCreateSharedLink = async () => {
+    const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : undefined;
 
-		try {
-			const expirationTime = getExpirationTimeInMillisecond();
-			const currentTime = new Date().getTime();
-			const expirationDate: string | null = expirationTime
-				? new Date(currentTime + expirationTime).toISOString()
-				: null;
+    try {
+      const data = await createSharedLink({
+        sharedLinkCreateDto: {
+          type: shareType,
+          albumId,
+          assetIds,
+          expiresAt: expirationDate,
+          allowUpload,
+          description,
+          password,
+          allowDownload,
+          showMetadata,
+        },
+      });
+      sharedLink = makeSharedLinkUrl($serverConfig.externalDomain, data.key);
+      onCreated();
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_create_shared_link'));
+    }
+  };
 
-			await api.sharedLinkApi.updateSharedLink({
-				id: editingLink.id,
-				sharedLinkEditDto: {
-					description,
-					expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
-					allowUpload: allowUpload,
-					allowDownload: allowDownload,
-					showExif: showExif
-				}
-			});
+  const handleEditLink = async () => {
+    if (!editingLink) {
+      return;
+    }
 
-			notificationController.show({
-				type: NotificationType.Info,
-				message: 'Edited'
-			});
+    try {
+      const expirationDate = expirationOption > 0 ? DateTime.now().plus(expirationOption).toISO() : null;
 
-			dispatch('close');
-		} catch (e) {
-			handleError(e, 'Failed to edit shared link');
-		}
-	};
+      await updateSharedLink({
+        id: editingLink.id,
+        sharedLinkEditDto: {
+          description,
+          password: enablePassword ? password : '',
+          expiresAt: shouldChangeExpirationTime ? expirationDate : undefined,
+          allowUpload,
+          allowDownload,
+          showMetadata,
+        },
+      });
+
+      notificationController.show({
+        type: NotificationType.Info,
+        message: $t('edited'),
+      });
+
+      onClose();
+    } catch (error) {
+      handleError(error, $t('errors.failed_to_edit_shared_link'));
+    }
+  };
+
+  const getTitle = () => {
+    if (editingLink) {
+      return $t('edit_link');
+    }
+    return $t('create_link_to_share');
+  };
 </script>
 
-<BaseModal on:close={() => dispatch('close')}>
-	<svelte:fragment slot="title">
-		<span class="flex gap-2 place-items-center">
-			<Link size={24} />
-			{#if editingLink}
-				<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Edit link</p>
-			{:else}
-				<p class="font-medium text-immich-fg dark:text-immich-dark-fg">Create link to share</p>
-			{/if}
-		</span>
-	</svelte:fragment>
+<FullScreenModal title={getTitle()} icon={mdiLink} {onClose}>
+  <section>
+    {#if shareType === SharedLinkType.Album}
+      {#if !editingLink}
+        <div>{$t('album_with_link_access')}</div>
+      {:else}
+        <div class="text-sm">
+          {$t('public_album')} |
+          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.album?.albumName}</span>
+        </div>
+      {/if}
+    {/if}
 
-	<section class="mx-6 mb-6">
-		{#if shareType == SharedLinkType.Album}
-			{#if !editingLink}
-				<div>Let anyone with the link see photos and people in this album.</div>
-			{:else}
-				<div class="text-sm">
-					Public album | <span class="text-immich-primary dark:text-immich-dark-primary"
-						>{editingLink.album?.albumName}</span
-					>
-				</div>
-			{/if}
-		{/if}
+    {#if shareType === SharedLinkType.Individual}
+      {#if !editingLink}
+        <div>{$t('create_link_to_share_description')}</div>
+      {:else}
+        <div class="text-sm">
+          {$t('individual_share')} |
+          <span class="text-immich-primary dark:text-immich-dark-primary">{editingLink.description || ''}</span>
+        </div>
+      {/if}
+    {/if}
 
-		{#if shareType == SharedLinkType.Individual}
-			{#if !editingLink}
-				<div>Let anyone with the link see the selected photo(s)</div>
-			{:else}
-				<div class="text-sm">
-					Individual shared | <span class="text-immich-primary dark:text-immich-dark-primary"
-						>{editingLink.description}</span
-					>
-				</div>
-			{/if}
-		{/if}
+    <div class="mb-2 mt-4">
+      <p class="text-xs">{$t('link_options').toUpperCase()}</p>
+    </div>
+    <div class="rounded-lg bg-gray-100 p-4 dark:bg-black/40 overflow-y-auto">
+      <div class="flex flex-col">
+        <div class="mb-2">
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('description')}
+            bind:value={description}
+          />
+        </div>
 
-		<div class="mt-4 mb-2">
-			<p class="text-xs">LINK OPTIONS</p>
-		</div>
-		<div class="p-4 bg-gray-100 dark:bg-black/40 rounded-lg">
-			<div class="flex flex-col">
-				<div class="mb-2">
-					<SettingInputField
-						inputType={SettingInputFieldType.TEXT}
-						label="Description"
-						bind:value={description}
-					/>
-				</div>
+        <div class="mb-2">
+          <SettingInputField
+            inputType={SettingInputFieldType.TEXT}
+            label={$t('password')}
+            bind:value={password}
+            disabled={!enablePassword}
+          />
+        </div>
 
-				<div class="my-3">
-					<SettingSwitch bind:checked={showExif} title={'Show metadata'} />
-				</div>
+        <div class="my-3">
+          <SettingSwitch bind:checked={enablePassword} title={$t('require_password')} />
+        </div>
 
-				<div class="my-3">
-					<SettingSwitch bind:checked={allowDownload} title={'Allow public user to download'} />
-				</div>
+        <div class="my-3">
+          <SettingSwitch bind:checked={showMetadata} title={$t('show_metadata')} />
+        </div>
 
-				<div class="my-3">
-					<SettingSwitch bind:checked={allowUpload} title={'Allow public user to upload'} />
-				</div>
+        <div class="my-3">
+          <SettingSwitch
+            bind:checked={allowDownload}
+            title={$t('allow_public_user_to_download')}
+            disabled={!showMetadata}
+          />
+        </div>
 
-				<div class="text-sm">
-					{#if editingLink}
-						<p class="my-2 immich-form-label">
-							<SettingSwitch
-								bind:checked={shouldChangeExpirationTime}
-								title={'Change expiration time'}
-							/>
-						</p>
-					{:else}
-						<p class="my-2 immich-form-label">Expire after</p>
-					{/if}
+        <div class="my-3">
+          <SettingSwitch bind:checked={allowUpload} title={$t('allow_public_user_to_upload')} />
+        </div>
 
-					<DropdownButton
-						options={expiredDateOption}
-						bind:selected={expirationTime}
-						disabled={editingLink && !shouldChangeExpirationTime}
-					/>
-				</div>
-			</div>
-		</div>
-	</section>
+        {#if editingLink}
+          <div class="my-3">
+            <SettingSwitch bind:checked={shouldChangeExpirationTime} title={$t('change_expiration_time')} />
+          </div>
+        {/if}
+        <div class="mt-3">
+          <SettingSelect
+            bind:value={expirationOption}
+            options={expiredDateOptions}
+            label={$t('expire_after')}
+            disabled={editingLink && !shouldChangeExpirationTime}
+            number={true}
+          />
+        </div>
+      </div>
+    </div>
+  </section>
 
-	<hr />
-
-	<section class="m-6">
-		{#if !sharedLink}
-			{#if editingLink}
-				<div class="flex justify-end">
-					<Button size="sm" rounded="lg" on:click={handleEditLink}>Confirm</Button>
-				</div>
-			{:else}
-				<div class="flex justify-end">
-					<Button size="sm" rounded="lg" on:click={handleCreateSharedLink}>Create link</Button>
-				</div>
-			{/if}
-		{:else}
-			<div class="flex w-full gap-4">
-				<input class="immich-form-input w-full" bind:value={sharedLink} disabled />
-
-				<Button on:click={() => handleCopy()}>Copy</Button>
-			</div>
-		{/if}
-	</section>
-</BaseModal>
+  {#snippet stickyBottom()}
+    {#if !sharedLink}
+      {#if editingLink}
+        <Button size="sm" fullwidth onclick={handleEditLink}>{$t('confirm')}</Button>
+      {:else}
+        <Button size="sm" fullwidth onclick={handleCreateSharedLink}>{$t('create_link')}</Button>
+      {/if}
+    {:else}
+      <HStack class="w-full">
+        <Input bind:value={sharedLink} disabled class="flex flex-row" />
+        <IconButton
+          variant="ghost"
+          shape="round"
+          color="secondary"
+          size="giant"
+          icon={mdiContentCopy}
+          onclick={() => (sharedLink ? copyToClipboard(sharedLink) : '')}
+          aria-label={$t('copy_link_to_clipboard')}
+        />
+      </HStack>
+    {/if}
+  {/snippet}
+</FullScreenModal>

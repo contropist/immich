@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -20,7 +20,7 @@ class ServerPingResponse {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerPingResponse &&
-     other.res == res;
+    other.res == res;
 
   @override
   int get hashCode =>
@@ -40,6 +40,7 @@ class ServerPingResponse {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerPingResponse? fromJson(dynamic value) {
+    upgradeDto(value, "ServerPingResponse");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

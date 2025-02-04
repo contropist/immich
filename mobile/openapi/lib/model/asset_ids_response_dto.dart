@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,41 +14,41 @@ class AssetIdsResponseDto {
   /// Returns a new [AssetIdsResponseDto] instance.
   AssetIdsResponseDto({
     required this.assetId,
-    required this.success,
     this.error,
+    required this.success,
   });
 
   String assetId;
 
-  bool success;
-
   AssetIdsResponseDtoErrorEnum? error;
+
+  bool success;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetIdsResponseDto &&
-     other.assetId == assetId &&
-     other.success == success &&
-     other.error == error;
+    other.assetId == assetId &&
+    other.error == error &&
+    other.success == success;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (assetId.hashCode) +
-    (success.hashCode) +
-    (error == null ? 0 : error!.hashCode);
+    (error == null ? 0 : error!.hashCode) +
+    (success.hashCode);
 
   @override
-  String toString() => 'AssetIdsResponseDto[assetId=$assetId, success=$success, error=$error]';
+  String toString() => 'AssetIdsResponseDto[assetId=$assetId, error=$error, success=$success]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
-      json[r'success'] = this.success;
     if (this.error != null) {
       json[r'error'] = this.error;
     } else {
     //  json[r'error'] = null;
     }
+      json[r'success'] = this.success;
     return json;
   }
 
@@ -56,13 +56,14 @@ class AssetIdsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetIdsResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetIdsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AssetIdsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        success: mapValueOfType<bool>(json, r'success')!,
         error: AssetIdsResponseDtoErrorEnum.fromJson(json[r'error']),
+        success: mapValueOfType<bool>(json, r'success')!,
       );
     }
     return null;
@@ -141,7 +142,7 @@ class AssetIdsResponseDtoErrorEnum {
 
   static AssetIdsResponseDtoErrorEnum? fromJson(dynamic value) => AssetIdsResponseDtoErrorEnumTypeTransformer().decode(value);
 
-  static List<AssetIdsResponseDtoErrorEnum>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<AssetIdsResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetIdsResponseDtoErrorEnum>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {

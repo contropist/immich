@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,32 +13,38 @@ part of openapi.api;
 class CreateProfileImageResponseDto {
   /// Returns a new [CreateProfileImageResponseDto] instance.
   CreateProfileImageResponseDto({
-    required this.userId,
+    required this.profileChangedAt,
     required this.profileImagePath,
+    required this.userId,
   });
 
-  String userId;
+  DateTime profileChangedAt;
 
   String profileImagePath;
 
+  String userId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is CreateProfileImageResponseDto &&
-     other.userId == userId &&
-     other.profileImagePath == profileImagePath;
+    other.profileChangedAt == profileChangedAt &&
+    other.profileImagePath == profileImagePath &&
+    other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (userId.hashCode) +
-    (profileImagePath.hashCode);
+    (profileChangedAt.hashCode) +
+    (profileImagePath.hashCode) +
+    (userId.hashCode);
 
   @override
-  String toString() => 'CreateProfileImageResponseDto[userId=$userId, profileImagePath=$profileImagePath]';
+  String toString() => 'CreateProfileImageResponseDto[profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'userId'] = this.userId;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
+      json[r'userId'] = this.userId;
     return json;
   }
 
@@ -46,12 +52,14 @@ class CreateProfileImageResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static CreateProfileImageResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "CreateProfileImageResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return CreateProfileImageResponseDto(
-        userId: mapValueOfType<String>(json, r'userId')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
     return null;
@@ -99,8 +107,9 @@ class CreateProfileImageResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'userId',
+    'profileChangedAt',
     'profileImagePath',
+    'userId',
   };
 }
 

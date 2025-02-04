@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,43 +14,37 @@ class SignUpDto {
   /// Returns a new [SignUpDto] instance.
   SignUpDto({
     required this.email,
+    required this.name,
     required this.password,
-    required this.firstName,
-    required this.lastName,
   });
 
   String email;
 
+  String name;
+
   String password;
-
-  String firstName;
-
-  String lastName;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SignUpDto &&
-     other.email == email &&
-     other.password == password &&
-     other.firstName == firstName &&
-     other.lastName == lastName;
+    other.email == email &&
+    other.name == name &&
+    other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (password.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode);
+    (name.hashCode) +
+    (password.hashCode);
 
   @override
-  String toString() => 'SignUpDto[email=$email, password=$password, firstName=$firstName, lastName=$lastName]';
+  String toString() => 'SignUpDto[email=$email, name=$name, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
+      json[r'name'] = this.name;
       json[r'password'] = this.password;
-      json[r'firstName'] = this.firstName;
-      json[r'lastName'] = this.lastName;
     return json;
   }
 
@@ -58,14 +52,14 @@ class SignUpDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SignUpDto? fromJson(dynamic value) {
+    upgradeDto(value, "SignUpDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SignUpDto(
         email: mapValueOfType<String>(json, r'email')!,
+        name: mapValueOfType<String>(json, r'name')!,
         password: mapValueOfType<String>(json, r'password')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
       );
     }
     return null;
@@ -114,9 +108,8 @@ class SignUpDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'email',
+    'name',
     'password',
-    'firstName',
-    'lastName',
   };
 }
 

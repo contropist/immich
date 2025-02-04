@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,44 +13,44 @@ part of openapi.api;
 class SearchAlbumResponseDto {
   /// Returns a new [SearchAlbumResponseDto] instance.
   SearchAlbumResponseDto({
-    required this.total,
     required this.count,
-    this.items = const [],
     this.facets = const [],
+    this.items = const [],
+    required this.total,
   });
-
-  int total;
 
   int count;
 
+  List<SearchFacetResponseDto> facets;
+
   List<AlbumResponseDto> items;
 
-  List<SearchFacetResponseDto> facets;
+  int total;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchAlbumResponseDto &&
-     other.total == total &&
-     other.count == count &&
-     other.items == items &&
-     other.facets == facets;
+    other.count == count &&
+    _deepEquality.equals(other.facets, facets) &&
+    _deepEquality.equals(other.items, items) &&
+    other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (total.hashCode) +
     (count.hashCode) +
+    (facets.hashCode) +
     (items.hashCode) +
-    (facets.hashCode);
+    (total.hashCode);
 
   @override
-  String toString() => 'SearchAlbumResponseDto[total=$total, count=$count, items=$items, facets=$facets]';
+  String toString() => 'SearchAlbumResponseDto[count=$count, facets=$facets, items=$items, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'total'] = this.total;
       json[r'count'] = this.count;
-      json[r'items'] = this.items;
       json[r'facets'] = this.facets;
+      json[r'items'] = this.items;
+      json[r'total'] = this.total;
     return json;
   }
 
@@ -58,14 +58,15 @@ class SearchAlbumResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchAlbumResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "SearchAlbumResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SearchAlbumResponseDto(
-        total: mapValueOfType<int>(json, r'total')!,
         count: mapValueOfType<int>(json, r'count')!,
-        items: AlbumResponseDto.listFromJson(json[r'items']),
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
+        items: AlbumResponseDto.listFromJson(json[r'items']),
+        total: mapValueOfType<int>(json, r'total')!,
       );
     }
     return null;
@@ -113,10 +114,10 @@ class SearchAlbumResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'total',
     'count',
-    'items',
     'facets',
+    'items',
+    'total',
   };
 }
 

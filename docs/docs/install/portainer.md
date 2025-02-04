@@ -8,12 +8,12 @@ Install Immich using Portainer's Stack feature.
 
 1. Go to "**Stacks**" in the left sidebar.
 2. Click on "**Add stack**".
-3. Give the stack a name (i.e. Immich), and select "**Web Editor**" as the build method.
+3. Give the stack a name (i.e. immich), and select "**Web Editor**" as the build method.
 4. Copy the content of the `docker-compose.yml` file from the [GitHub repository](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml).
 5. Replace `.env` with `stack.env` for all containers that need to use environment variables in the web editor.
 
 <img
-src={require('./img/dot-env.png').default}
+src={require('./img/dot-env.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
@@ -22,7 +22,7 @@ alt="Dot Env Example"
 8. Click on "**Advanced Mode**" in the **Environment Variables** section.
 
 <img
-src={require('./img/env-1.png').default}
+src={require('./img/env-1.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
@@ -32,14 +32,15 @@ alt="Dot Env Example"
 10. Switch back to "**Simple Mode**".
 
 <img
-src={require('./img/env-2.png').default}
+src={require('./img/env-2.webp').default}
 width="50%"
 style={{border: '1px solid #ddd'}}
 alt="Dot Env Example"
 />
 
-- Populate custom database information if necessary.
-- Populate `UPLOAD_LOCATION` with your preferred location for storing backup assets.
+- Change the default `DB_PASSWORD`, and add custom database connection information if necessary.
+- Change `DB_DATA_LOCATION` to a folder where the database will be saved to disk.
+- Change `UPLOAD_LOCATION` to a folder where media (uploaded and generated) will be stored.
 
 11. Click on "**Deploy the stack**".
 

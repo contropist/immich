@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,44 +13,54 @@ part of openapi.api;
 class SearchAssetResponseDto {
   /// Returns a new [SearchAssetResponseDto] instance.
   SearchAssetResponseDto({
-    required this.total,
     required this.count,
-    this.items = const [],
     this.facets = const [],
+    this.items = const [],
+    required this.nextPage,
+    required this.total,
   });
-
-  int total;
 
   int count;
 
+  List<SearchFacetResponseDto> facets;
+
   List<AssetResponseDto> items;
 
-  List<SearchFacetResponseDto> facets;
+  String? nextPage;
+
+  int total;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchAssetResponseDto &&
-     other.total == total &&
-     other.count == count &&
-     other.items == items &&
-     other.facets == facets;
+    other.count == count &&
+    _deepEquality.equals(other.facets, facets) &&
+    _deepEquality.equals(other.items, items) &&
+    other.nextPage == nextPage &&
+    other.total == total;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (total.hashCode) +
     (count.hashCode) +
+    (facets.hashCode) +
     (items.hashCode) +
-    (facets.hashCode);
+    (nextPage == null ? 0 : nextPage!.hashCode) +
+    (total.hashCode);
 
   @override
-  String toString() => 'SearchAssetResponseDto[total=$total, count=$count, items=$items, facets=$facets]';
+  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, nextPage=$nextPage, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'total'] = this.total;
       json[r'count'] = this.count;
-      json[r'items'] = this.items;
       json[r'facets'] = this.facets;
+      json[r'items'] = this.items;
+    if (this.nextPage != null) {
+      json[r'nextPage'] = this.nextPage;
+    } else {
+    //  json[r'nextPage'] = null;
+    }
+      json[r'total'] = this.total;
     return json;
   }
 
@@ -58,14 +68,16 @@ class SearchAssetResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchAssetResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "SearchAssetResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SearchAssetResponseDto(
-        total: mapValueOfType<int>(json, r'total')!,
         count: mapValueOfType<int>(json, r'count')!,
-        items: AssetResponseDto.listFromJson(json[r'items']),
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
+        items: AssetResponseDto.listFromJson(json[r'items']),
+        nextPage: mapValueOfType<String>(json, r'nextPage'),
+        total: mapValueOfType<int>(json, r'total')!,
       );
     }
     return null;
@@ -113,10 +125,11 @@ class SearchAssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'total',
     'count',
-    'items',
     'facets',
+    'items',
+    'nextPage',
+    'total',
   };
 }
 

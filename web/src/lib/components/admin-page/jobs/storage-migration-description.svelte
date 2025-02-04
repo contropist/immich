@@ -1,10 +1,19 @@
 <script lang="ts">
-	import { AppRoute } from '$lib/constants';
+  import FormatMessage from '$lib/components/i18n/format-message.svelte';
+  import { AppRoute, OpenSettingQueryParameterValue, QueryParameter } from '$lib/constants';
+  import { t } from 'svelte-i18n';
 </script>
 
-Apply the current
-<a
-	href={`${AppRoute.ADMIN_SETTINGS}?open=storage-template`}
-	class="text-immich-primary dark:text-immich-dark-primary">Storage template</a
+<FormatMessage
+  key="admin.storage_template_migration_description"
+  values={{ template: $t('admin.storage_template_settings') }}
 >
-to previously uploaded assets
+  {#snippet children({ message })}
+    <a
+      href="{AppRoute.ADMIN_SETTINGS}?{QueryParameter.IS_OPEN}={OpenSettingQueryParameterValue.STORAGE_TEMPLATE}"
+      class="text-immich-primary dark:text-immich-dark-primary"
+    >
+      {message}
+    </a>
+  {/snippet}
+</FormatMessage>

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,43 +13,49 @@ part of openapi.api;
 class APIKeyResponseDto {
   /// Returns a new [APIKeyResponseDto] instance.
   APIKeyResponseDto({
+    required this.createdAt,
     required this.id,
     required this.name,
-    required this.createdAt,
+    this.permissions = const [],
     required this.updatedAt,
   });
+
+  DateTime createdAt;
 
   String id;
 
   String name;
 
-  DateTime createdAt;
+  List<Permission> permissions;
 
   DateTime updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyResponseDto &&
-     other.id == id &&
-     other.name == name &&
-     other.createdAt == createdAt &&
-     other.updatedAt == updatedAt;
+    other.createdAt == createdAt &&
+    other.id == id &&
+    other.name == name &&
+    _deepEquality.equals(other.permissions, permissions) &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (createdAt.hashCode) +
+    (permissions.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'APIKeyResponseDto[id=$id, name=$name, createdAt=$createdAt, updatedAt=$updatedAt]';
+  String toString() => 'APIKeyResponseDto[createdAt=$createdAt, id=$id, name=$name, permissions=$permissions, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'permissions'] = this.permissions;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
@@ -58,14 +64,16 @@ class APIKeyResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static APIKeyResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "APIKeyResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return APIKeyResponseDto(
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
+        permissions: Permission.listFromJson(json[r'permissions']),
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -113,9 +121,10 @@ class APIKeyResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'createdAt',
     'id',
     'name',
-    'createdAt',
+    'permissions',
     'updatedAt',
   };
 }

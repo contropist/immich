@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,26 +13,98 @@ part of openapi.api;
 class PersonUpdateDto {
   /// Returns a new [PersonUpdateDto] instance.
   PersonUpdateDto({
-    required this.name,
+    this.birthDate,
+    this.featureFaceAssetId,
+    this.isFavorite,
+    this.isHidden,
+    this.name,
   });
 
-  String name;
+  /// Person date of birth. Note: the mobile app cannot currently set the birth date to null.
+  DateTime? birthDate;
+
+  /// Asset is used to get the feature face thumbnail.
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? featureFaceAssetId;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isFavorite;
+
+  /// Person visibility
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isHidden;
+
+  /// Person name.
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PersonUpdateDto &&
-     other.name == name;
+    other.birthDate == birthDate &&
+    other.featureFaceAssetId == featureFaceAssetId &&
+    other.isFavorite == isFavorite &&
+    other.isHidden == isHidden &&
+    other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (name.hashCode);
+    (birthDate == null ? 0 : birthDate!.hashCode) +
+    (featureFaceAssetId == null ? 0 : featureFaceAssetId!.hashCode) +
+    (isFavorite == null ? 0 : isFavorite!.hashCode) +
+    (isHidden == null ? 0 : isHidden!.hashCode) +
+    (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'PersonUpdateDto[name=$name]';
+  String toString() => 'PersonUpdateDto[birthDate=$birthDate, featureFaceAssetId=$featureFaceAssetId, isFavorite=$isFavorite, isHidden=$isHidden, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.birthDate != null) {
+      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
+    } else {
+    //  json[r'birthDate'] = null;
+    }
+    if (this.featureFaceAssetId != null) {
+      json[r'featureFaceAssetId'] = this.featureFaceAssetId;
+    } else {
+    //  json[r'featureFaceAssetId'] = null;
+    }
+    if (this.isFavorite != null) {
+      json[r'isFavorite'] = this.isFavorite;
+    } else {
+    //  json[r'isFavorite'] = null;
+    }
+    if (this.isHidden != null) {
+      json[r'isHidden'] = this.isHidden;
+    } else {
+    //  json[r'isHidden'] = null;
+    }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+    //  json[r'name'] = null;
+    }
     return json;
   }
 
@@ -40,11 +112,16 @@ class PersonUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static PersonUpdateDto? fromJson(dynamic value) {
+    upgradeDto(value, "PersonUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return PersonUpdateDto(
-        name: mapValueOfType<String>(json, r'name')!,
+        birthDate: mapDateTime(json, r'birthDate', r''),
+        featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
+        isHidden: mapValueOfType<bool>(json, r'isHidden'),
+        name: mapValueOfType<String>(json, r'name'),
       );
     }
     return null;
@@ -92,7 +169,6 @@ class PersonUpdateDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'name',
   };
 }
 

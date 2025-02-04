@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -20,7 +20,7 @@ class APIKeyUpdateDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is APIKeyUpdateDto &&
-     other.name == name;
+    other.name == name;
 
   @override
   int get hashCode =>
@@ -40,6 +40,7 @@ class APIKeyUpdateDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static APIKeyUpdateDto? fromJson(dynamic value) {
+    upgradeDto(value, "APIKeyUpdateDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

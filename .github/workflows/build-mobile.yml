@@ -16,11 +16,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pre-job:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.found_paths.outputs.mobile == 'true' || steps.should_force.outputs.should_force == 'true' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - id: found_paths
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            mobile:
+              - 'mobile/**'
+      - name: Check if we should force jobs to run
+        id: should_force
+        run: echo "should_force=${{ github.event_name == 'workflow_call' || github.event_name == 'workflow_dispatch' }}" >> "$GITHUB_OUTPUT"
+
   build-sign-android:
     name: Build and sign Android
+    needs: pre-job
     # Skip when PR from a fork
-    if: ${{ !github.event.pull_request.head.repo.fork }}
-    runs-on: macos-12
+    if: ${{ !github.event.pull_request.head.repo.fork && github.actor != 'dependabot[bot]' && needs.pre-job.outputs.should_run == 'true' }}
+    runs-on: macos-14
 
     steps:
       - name: Determine ref
@@ -31,21 +49,21 @@ jobs:
           ref="${input_ref:-$github_ref}"
           echo "ref=$ref" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.get-ref.outputs.ref }}
 
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v4
         with:
-          distribution: "zulu"
-          java-version: "12.x"
-          cache: "gradle"
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
-          flutter-version: "3.10.0"
+          channel: 'stable'
+          flutter-version-file: ./mobile/pubspec.yaml
           cache: true
 
       - name: Create the Keystore
@@ -64,10 +82,12 @@ jobs:
           ALIAS: ${{ secrets.ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
-        run: flutter build apk --release
+        run: |
+          flutter build apk --release
+          flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
 
       - name: Publish Android Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk-signed
-          path: mobile/build/app/outputs/flutter-apk/app-release.apk
+          path: mobile/build/app/outputs/flutter-apk/*.apk

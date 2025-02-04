@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,32 +13,32 @@ part of openapi.api;
 class ChangePasswordDto {
   /// Returns a new [ChangePasswordDto] instance.
   ChangePasswordDto({
-    required this.password,
     required this.newPassword,
+    required this.password,
   });
-
-  String password;
 
   String newPassword;
 
+  String password;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ChangePasswordDto &&
-     other.password == password &&
-     other.newPassword == newPassword;
+    other.newPassword == newPassword &&
+    other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (password.hashCode) +
-    (newPassword.hashCode);
+    (newPassword.hashCode) +
+    (password.hashCode);
 
   @override
-  String toString() => 'ChangePasswordDto[password=$password, newPassword=$newPassword]';
+  String toString() => 'ChangePasswordDto[newPassword=$newPassword, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'password'] = this.password;
       json[r'newPassword'] = this.newPassword;
+      json[r'password'] = this.password;
     return json;
   }
 
@@ -46,12 +46,13 @@ class ChangePasswordDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ChangePasswordDto? fromJson(dynamic value) {
+    upgradeDto(value, "ChangePasswordDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return ChangePasswordDto(
-        password: mapValueOfType<String>(json, r'password')!,
         newPassword: mapValueOfType<String>(json, r'newPassword')!,
+        password: mapValueOfType<String>(json, r'password')!,
       );
     }
     return null;
@@ -99,8 +100,8 @@ class ChangePasswordDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'password',
     'newPassword',
+    'password',
   };
 }
 

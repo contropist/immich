@@ -1,91 +1,160 @@
 <script lang="ts">
-	import '../app.css';
+  import { afterNavigate, beforeNavigate } from '$app/navigation';
+  import { page } from '$app/state';
+  import { shortcut } from '$lib/actions/shortcut';
+  import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
+  import Error from '$lib/components/error.svelte';
+  import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
+  import DialogWrapper from '$lib/components/shared-components/dialog/dialog-wrapper.svelte';
+  import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
+  import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
+  import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
+  import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
+  import { Theme } from '$lib/constants';
+  import { colorTheme, handleToggleTheme, type ThemeSetting } from '$lib/stores/preferences.store';
+  import { serverConfig } from '$lib/stores/server-config.store';
+  import { user } from '$lib/stores/user.store';
+  import { closeWebsocketConnection, openWebsocketConnection } from '$lib/stores/websocket';
+  import { copyToClipboard, setKey } from '$lib/utils';
+  import { isAssetViewerRoute, isSharedLinkRoute } from '$lib/utils/navigation';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import { run } from 'svelte/legacy';
+  import { setTranslations } from '@immich/ui';
+  import '../app.css';
+  import { t } from 'svelte-i18n';
 
-	import { page } from '$app/stores';
-	import { afterNavigate, beforeNavigate } from '$app/navigation';
-	import NavigationLoadingBar from '$lib/components/shared-components/navigation-loading-bar.svelte';
-	import DownloadPanel from '$lib/components/asset-viewer/download-panel.svelte';
-	import UploadPanel from '$lib/components/shared-components/upload-panel.svelte';
-	import NotificationList from '$lib/components/shared-components/notification/notification-list.svelte';
-	import VersionAnnouncementBox from '$lib/components/shared-components/version-announcement-box.svelte';
-	import type { LayoutData } from './$types';
-	import { fileUploadHandler } from '$lib/utils/file-uploader';
-	import UploadCover from '$lib/components/shared-components/drag-and-drop-upload-overlay.svelte';
-	import FullscreenContainer from '$lib/components/shared-components/fullscreen-container.svelte';
-	import AppleHeader from '$lib/components/shared-components/apple-header.svelte';
-	import FaviconHeader from '$lib/components/shared-components/favicon-header.svelte';
+  interface Props {
+    children?: Snippet;
+  }
 
-	let showNavigationLoadingBar = false;
-	export let data: LayoutData;
+  $effect(() => {
+    setTranslations({
+      close: $t('close'),
+      showPassword: $t('show_password'),
+      hidePassword: $t('hide_password'),
+    });
+  });
 
-	beforeNavigate(() => {
-		showNavigationLoadingBar = true;
-	});
+  let { children }: Props = $props();
 
-	afterNavigate(() => {
-		showNavigationLoadingBar = false;
-	});
+  let showNavigationLoadingBar = $state(false);
 
-	const dropHandler = async ({ dataTransfer }: DragEvent) => {
-		const files = dataTransfer?.files;
-		if (!files) {
-			return;
-		}
+  const changeTheme = (theme: ThemeSetting) => {
+    if (theme.system) {
+      theme.value = globalThis.matchMedia('(prefers-color-scheme: dark)').matches ? Theme.DARK : Theme.LIGHT;
+    }
 
-		const filesArray: File[] = Array.from<File>(files);
-		const albumId =
-			($page.route.id === '/(user)/albums/[albumId]' || undefined) && $page.params.albumId;
+    if (theme.value === Theme.LIGHT) {
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.add('dark');
+    }
+  };
 
-		await fileUploadHandler(filesArray, albumId);
-	};
+  const handleChangeTheme = () => {
+    if ($colorTheme.system) {
+      handleToggleTheme();
+    }
+  };
+
+  const getMyImmichLink = () => {
+    return new URL(page.url.pathname + page.url.search, 'https://my.immich.app');
+  };
+
+  onMount(() => {
+    const element = document.querySelector('#stencil');
+    element?.remove();
+    // if the browser theme changes, changes the Immich theme too
+    globalThis.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleChangeTheme);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener('change', handleChangeTheme);
+  });
+
+  if (isSharedLinkRoute(page.route?.id)) {
+    setKey(page.params.key);
+  }
+
+  beforeNavigate(({ from, to }) => {
+    setKey(isSharedLinkRoute(to?.route.id) ? to?.params?.key : undefined);
+
+    if (isAssetViewerRoute(from) && isAssetViewerRoute(to)) {
+      return;
+    }
+    showNavigationLoadingBar = true;
+  });
+
+  afterNavigate(() => {
+    showNavigationLoadingBar = false;
+  });
+  run(() => {
+    changeTheme($colorTheme);
+  });
+  run(() => {
+    if ($user) {
+      openWebsocketConnection();
+    } else {
+      closeWebsocketConnection();
+    }
+  });
 </script>
 
 <svelte:head>
-	<title>{$page.data.meta?.title || 'Web'} - Immich</title>
-	<link rel="manifest" href="/manifest.json" />
-	<meta name="theme-color" content="currentColor" />
-	<FaviconHeader />
-	<AppleHeader />
+  <title>{page.data.meta?.title || 'Web'} - Immich</title>
+  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials" />
+  <meta name="theme-color" content="currentColor" />
+  <AppleHeader />
 
-	{#if $page.data.meta}
-		<meta name="description" content={$page.data.meta.description} />
+  {#if page.data.meta}
+    <meta name="description" content={page.data.meta.description} />
 
-		<!-- Facebook Meta Tags -->
-		<meta property="og:type" content="website" />
-		<meta property="og:title" content={$page.data.meta.title} />
-		<meta property="og:description" content={$page.data.meta.description} />
-		<meta property="og:image" content={$page.data.meta.imageUrl} />
+    <!-- Facebook Meta Tags -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={page.data.meta.title} />
+    <meta property="og:description" content={page.data.meta.description} />
+    {#if page.data.meta.imageUrl}
+      <meta
+        property="og:image"
+        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+      />
+    {/if}
 
-		<!-- Twitter Meta Tags -->
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content={$page.data.meta.title} />
-		<meta name="twitter:description" content={$page.data.meta.description} />
-		<meta name="twitter:image" content={$page.data.meta.imageUrl} />
-	{/if}
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={page.data.meta.title} />
+    <meta name="twitter:description" content={page.data.meta.description} />
+    {#if page.data.meta.imageUrl}
+      <meta
+        name="twitter:image"
+        content={new URL(page.data.meta.imageUrl, $serverConfig.externalDomain || globalThis.location.origin).href}
+      />
+    {/if}
+  {/if}
 </svelte:head>
 
-<noscript
-	class="h-screen w-screen absolute z-[1000] flex place-items-center place-content-center bg-immich-bg dark:bg-immich-dark-bg dark:text-immich-dark-fg"
->
-	<FullscreenContainer title="Welcome to Immich">
-		To use Immich, you must enable JavaScript or use a JavaScript compatible browser.
-	</FullscreenContainer>
-</noscript>
+<svelte:window
+  use:shortcut={{
+    shortcut: { ctrl: true, shift: true, key: 'm' },
+    onShortcut: () => copyToClipboard(getMyImmichLink().toString()),
+  }}
+/>
 
-{#if showNavigationLoadingBar}
-	<NavigationLoadingBar />
+{#if page.data.error}
+  <Error error={page.data.error}></Error>
+{:else}
+  {@render children?.()}
 {/if}
 
-<slot />
+{#if showNavigationLoadingBar}
+  <NavigationLoadingBar />
+{/if}
 
 <DownloadPanel />
 <UploadPanel />
 <NotificationList />
+<DialogWrapper />
 
-{#if data.user?.isAdmin}
-	<VersionAnnouncementBox serverVersion={data.serverVersion} />
-{/if}
-
-{#if $page.route.id?.includes('(user)')}
-	<UploadCover {dropHandler} />
+{#if $user?.isAdmin}
+  <VersionAnnouncementBox />
 {/if}

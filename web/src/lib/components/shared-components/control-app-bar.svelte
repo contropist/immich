@@ -1,72 +1,89 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+  import { browser } from '$app/environment';
 
-	import { createEventDispatcher, onDestroy, onMount } from 'svelte';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import { fly } from 'svelte/transition';
+  import { onDestroy, onMount, type Snippet } from 'svelte';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import { fly } from 'svelte/transition';
+  import { mdiClose } from '@mdi/js';
+  import { isSelectingAllAssets } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
 
-	export let showBackButton = true;
-	export let backIcon = Close;
-	export let tailwindClasses = '';
-	export let forceDark = false;
+  interface Props {
+    showBackButton?: boolean;
+    backIcon?: string;
+    tailwindClasses?: string;
+    forceDark?: boolean;
+    onClose?: () => void;
+    leading?: Snippet;
+    children?: Snippet;
+    trailing?: Snippet;
+  }
 
-	let appBarBorder = 'bg-immich-bg border border-transparent';
+  let {
+    showBackButton = true,
+    backIcon = mdiClose,
+    tailwindClasses = '',
+    forceDark = false,
+    onClose = () => {},
+    leading,
+    children,
+    trailing,
+  }: Props = $props();
 
-	const dispatch = createEventDispatcher();
+  let appBarBorder = $state('bg-immich-bg border border-transparent');
 
-	const onScroll = () => {
-		if (window.pageYOffset > 80) {
-			appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
+  const onScroll = () => {
+    if (window.scrollY > 80) {
+      appBarBorder = 'border border-gray-200 bg-gray-50 dark:border-gray-600';
 
-			if (forceDark) {
-				appBarBorder = 'border border-gray-600';
-			}
-		} else {
-			appBarBorder = 'bg-immich-bg border border-transparent';
-		}
-	};
+      if (forceDark) {
+        appBarBorder = 'border border-gray-600';
+      }
+    } else {
+      appBarBorder = 'bg-immich-bg border border-transparent';
+    }
+  };
 
-	onMount(() => {
-		if (browser) {
-			document.addEventListener('scroll', onScroll);
-		}
-	});
+  const handleClose = () => {
+    $isSelectingAllAssets = false;
+    onClose();
+  };
 
-	onDestroy(() => {
-		if (browser) {
-			document.removeEventListener('scroll', onScroll);
-		}
-	});
+  onMount(() => {
+    if (browser) {
+      document.addEventListener('scroll', onScroll);
+    }
+  });
+
+  onDestroy(() => {
+    if (browser) {
+      document.removeEventListener('scroll', onScroll);
+    }
+  });
+
+  let buttonClass = $derived(forceDark ? 'hover:text-immich-dark-gray' : undefined);
 </script>
 
-<div in:fly={{ y: 10, duration: 200 }} class="fixed top-0 w-full bg-transparent z-[100]">
-	<div
-		id="asset-selection-app-bar"
-		class={`grid grid-cols-3 justify-between ${appBarBorder} rounded-lg p-2 mx-2 mt-2 transition-all place-items-center ${tailwindClasses} dark:bg-immich-dark-gray ${
-			forceDark && 'bg-immich-dark-gray text-white'
-		}`}
-	>
-		<div class="flex place-items-center gap-6 dark:text-immich-dark-fg justify-self-start">
-			{#if showBackButton}
-				<CircleIconButton
-					on:click={() => dispatch('close-button-click')}
-					logo={backIcon}
-					backgroundColor={'transparent'}
-					hoverColor={'#e2e7e9'}
-					size={'24'}
-					forceDark
-				/>
-			{/if}
-			<slot name="leading" />
-		</div>
+<div in:fly={{ y: 10, duration: 200 }} class="absolute top-0 w-full z-[100] bg-transparent">
+  <div
+    id="asset-selection-app-bar"
+    class={`grid grid-cols-[10%_80%_10%] justify-between sm:grid-cols-[25%_50%_25%] lg:grid-cols-[25%_50%_25%]  ${appBarBorder} mx-2 mt-2 place-items-center rounded-lg p-2 transition-all ${tailwindClasses} dark:bg-immich-dark-gray ${
+      forceDark && 'bg-immich-dark-gray text-white'
+    }`}
+  >
+    <div class="flex place-items-center sm:gap-6 justify-self-start dark:text-immich-dark-fg">
+      {#if showBackButton}
+        <CircleIconButton title={$t('close')} onclick={handleClose} icon={backIcon} size={'24'} class={buttonClass} />
+      {/if}
+      {@render leading?.()}
+    </div>
 
-		<div class="w-full">
-			<slot />
-		</div>
+    <div class="w-full">
+      {@render children?.()}
+    </div>
 
-		<div class="flex place-items-center gap-1 mr-4 justify-self-end">
-			<slot name="trailing" />
-		</div>
-	</div>
+    <div class="mr-4 flex place-items-center gap-1 justify-self-end">
+      {@render trailing?.()}
+    </div>
+  </div>
 </div>

@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -23,8 +23,8 @@ class SearchFacetCountResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SearchFacetCountResponseDto &&
-     other.count == count &&
-     other.value == value;
+    other.count == count &&
+    other.value == value;
 
   @override
   int get hashCode =>
@@ -46,6 +46,7 @@ class SearchFacetCountResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SearchFacetCountResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "SearchFacetCountResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

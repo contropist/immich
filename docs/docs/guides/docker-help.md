@@ -1,7 +1,3 @@
----
-sidebar_position: 1
----
-
 # Docker Help
 
 ## Containers
@@ -15,11 +11,8 @@ docker ps -a                      # see a list of running and stopped containers
 
 ```bash
 docker exec -it <id or name> <command>          # attach to a container with a command
-docker exec -it immich_server sh
-docker exec -it immich_microservices sh
-docker exec -it immich_machine_learning sh
-docker exec -it immich_web sh
-docker exec -it immich_proxy sh
+docker exec -it immich_server bash
+docker exec -it immich_machine_learning bash
 ```
 
 ## Logs
@@ -28,10 +21,7 @@ docker exec -it immich_proxy sh
 docker logs <id or name>          # see the logs for a specific container (by id or name)
 
 docker logs immich_server
-docker logs immich_microservices
 docker logs immich_machine_learning
-docker logs immich_web
-docker logs immich_proxy
 ```
 
 :::tip Follow a log

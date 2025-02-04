@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,43 +14,55 @@ class ServerStatsResponseDto {
   /// Returns a new [ServerStatsResponseDto] instance.
   ServerStatsResponseDto({
     this.photos = 0,
-    this.videos = 0,
     this.usage = 0,
     this.usageByUser = const [],
+    this.usagePhotos = 0,
+    this.usageVideos = 0,
+    this.videos = 0,
   });
 
   int photos;
-
-  int videos;
 
   int usage;
 
   List<UsageByUserDto> usageByUser;
 
+  int usagePhotos;
+
+  int usageVideos;
+
+  int videos;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerStatsResponseDto &&
-     other.photos == photos &&
-     other.videos == videos &&
-     other.usage == usage &&
-     other.usageByUser == usageByUser;
+    other.photos == photos &&
+    other.usage == usage &&
+    _deepEquality.equals(other.usageByUser, usageByUser) &&
+    other.usagePhotos == usagePhotos &&
+    other.usageVideos == usageVideos &&
+    other.videos == videos;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (photos.hashCode) +
-    (videos.hashCode) +
     (usage.hashCode) +
-    (usageByUser.hashCode);
+    (usageByUser.hashCode) +
+    (usagePhotos.hashCode) +
+    (usageVideos.hashCode) +
+    (videos.hashCode);
 
   @override
-  String toString() => 'ServerStatsResponseDto[photos=$photos, videos=$videos, usage=$usage, usageByUser=$usageByUser]';
+  String toString() => 'ServerStatsResponseDto[photos=$photos, usage=$usage, usageByUser=$usageByUser, usagePhotos=$usagePhotos, usageVideos=$usageVideos, videos=$videos]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'photos'] = this.photos;
-      json[r'videos'] = this.videos;
       json[r'usage'] = this.usage;
       json[r'usageByUser'] = this.usageByUser;
+      json[r'usagePhotos'] = this.usagePhotos;
+      json[r'usageVideos'] = this.usageVideos;
+      json[r'videos'] = this.videos;
     return json;
   }
 
@@ -58,14 +70,17 @@ class ServerStatsResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static ServerStatsResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "ServerStatsResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return ServerStatsResponseDto(
         photos: mapValueOfType<int>(json, r'photos')!,
-        videos: mapValueOfType<int>(json, r'videos')!,
         usage: mapValueOfType<int>(json, r'usage')!,
         usageByUser: UsageByUserDto.listFromJson(json[r'usageByUser']),
+        usagePhotos: mapValueOfType<int>(json, r'usagePhotos')!,
+        usageVideos: mapValueOfType<int>(json, r'usageVideos')!,
+        videos: mapValueOfType<int>(json, r'videos')!,
       );
     }
     return null;
@@ -114,9 +129,11 @@ class ServerStatsResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'photos',
-    'videos',
     'usage',
     'usageByUser',
+    'usagePhotos',
+    'usageVideos',
+    'videos',
   };
 }
 

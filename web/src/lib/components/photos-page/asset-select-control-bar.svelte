@@ -1,39 +1,49 @@
-<script lang="ts" context="module">
-	import { createContext } from '$lib/utils/context';
+<script lang="ts" module>
+  import { createContext } from '$lib/utils/context';
+  import { t } from 'svelte-i18n';
 
-	export type OnAssetDelete = (assetId: string) => void;
-	export type OnAssetArchive = (asset: AssetResponseDto, archived: boolean) => void;
-	export type OnAssetFavorite = (asset: AssetResponseDto, favorite: boolean) => void;
+  export interface AssetControlContext {
+    // Wrap assets in a function, because context isn't reactive.
+    getAssets: () => Set<AssetResponseDto>; // All assets includes partners' assets
+    getOwnedAssets: () => Set<AssetResponseDto>; // Only assets owned by the user
+    clearSelect: () => void;
+  }
 
-	export interface AssetControlContext {
-		// Wrap assets in a function, because context isn't reactive.
-		getAssets: () => Set<AssetResponseDto>;
-		clearSelect: () => void;
-	}
-
-	const { get: getAssetControlContext, set: setContext } = createContext<AssetControlContext>();
-	export { getAssetControlContext };
+  const { get: getAssetControlContext, set: setContext } = createContext<AssetControlContext>();
+  export { getAssetControlContext };
 </script>
 
 <script lang="ts">
-	import { locale } from '$lib/stores/preferences.store';
-	import type { AssetResponseDto } from '@api';
-	import Close from 'svelte-material-icons/Close.svelte';
-	import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import type { AssetResponseDto } from '@immich/sdk';
+  import { mdiClose } from '@mdi/js';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import type { Snippet } from 'svelte';
 
-	export let assets: Set<AssetResponseDto>;
-	export let clearSelect: () => void;
+  interface Props {
+    assets: Set<AssetResponseDto>;
+    clearSelect: () => void;
+    ownerId?: string | undefined;
+    children?: Snippet;
+  }
 
-	setContext({ getAssets: () => assets, clearSelect });
+  let { assets, clearSelect, ownerId = undefined, children }: Props = $props();
+
+  setContext({
+    getAssets: () => assets,
+    getOwnedAssets: () =>
+      ownerId === undefined ? assets : new Set([...assets].filter((asset) => asset.ownerId === ownerId)),
+    clearSelect,
+  });
 </script>
 
-<ControlAppBar
-	on:close-button-click={clearSelect}
-	backIcon={Close}
-	tailwindClasses="bg-white shadow-md"
->
-	<p class="font-medium text-immich-primary dark:text-immich-dark-primary" slot="leading">
-		Selected {assets.size.toLocaleString($locale)}
-	</p>
-	<slot slot="trailing" />
+<ControlAppBar onClose={clearSelect} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+  {#snippet leading()}
+    <div class="font-medium text-immich-primary dark:text-immich-dark-primary">
+      <p class="block sm:hidden">{assets.size}</p>
+      <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.size } })}</p>
+    </div>
+  {/snippet}
+  {#snippet trailing()}
+    {@render children?.()}
+  {/snippet}
 </ControlAppBar>

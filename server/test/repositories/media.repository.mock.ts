@@ -1,12 +1,14 @@
-import { IMediaRepository } from '@app/domain';
+import { IMediaRepository } from 'src/types';
+import { Mocked, vitest } from 'vitest';
 
-export const newMediaRepositoryMock = (): jest.Mocked<IMediaRepository> => {
+export const newMediaRepositoryMock = (): Mocked<IMediaRepository> => {
   return {
-    extractVideoThumbnail: jest.fn(),
-    generateThumbhash: jest.fn(),
-    resize: jest.fn(),
-    crop: jest.fn(),
-    probe: jest.fn(),
-    transcode: jest.fn(),
+    generateThumbnail: vitest.fn().mockImplementation(() => Promise.resolve()),
+    generateThumbhash: vitest.fn().mockResolvedValue(Buffer.from('')),
+    decodeImage: vitest.fn().mockResolvedValue({ data: Buffer.from(''), info: {} }),
+    extract: vitest.fn().mockResolvedValue(false),
+    probe: vitest.fn(),
+    transcode: vitest.fn(),
+    getImageDimensions: vitest.fn(),
   };
 };

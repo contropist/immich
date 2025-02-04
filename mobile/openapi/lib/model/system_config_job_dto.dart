@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,80 +13,86 @@ part of openapi.api;
 class SystemConfigJobDto {
   /// Returns a new [SystemConfigJobDto] instance.
   SystemConfigJobDto({
-    required this.thumbnailGeneration,
-    required this.metadataExtraction,
-    required this.videoConversion,
-    required this.objectTagging,
-    required this.clipEncoding,
-    required this.storageTemplateMigration,
     required this.backgroundTask,
+    required this.faceDetection,
+    required this.library_,
+    required this.metadataExtraction,
+    required this.migration,
+    required this.notifications,
     required this.search,
-    required this.recognizeFaces,
     required this.sidecar,
+    required this.smartSearch,
+    required this.thumbnailGeneration,
+    required this.videoConversion,
   });
-
-  JobSettingsDto thumbnailGeneration;
-
-  JobSettingsDto metadataExtraction;
-
-  JobSettingsDto videoConversion;
-
-  JobSettingsDto objectTagging;
-
-  JobSettingsDto clipEncoding;
-
-  JobSettingsDto storageTemplateMigration;
 
   JobSettingsDto backgroundTask;
 
-  JobSettingsDto search;
+  JobSettingsDto faceDetection;
 
-  JobSettingsDto recognizeFaces;
+  JobSettingsDto library_;
+
+  JobSettingsDto metadataExtraction;
+
+  JobSettingsDto migration;
+
+  JobSettingsDto notifications;
+
+  JobSettingsDto search;
 
   JobSettingsDto sidecar;
 
+  JobSettingsDto smartSearch;
+
+  JobSettingsDto thumbnailGeneration;
+
+  JobSettingsDto videoConversion;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigJobDto &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.metadataExtraction == metadataExtraction &&
-     other.videoConversion == videoConversion &&
-     other.objectTagging == objectTagging &&
-     other.clipEncoding == clipEncoding &&
-     other.storageTemplateMigration == storageTemplateMigration &&
-     other.backgroundTask == backgroundTask &&
-     other.search == search &&
-     other.recognizeFaces == recognizeFaces &&
-     other.sidecar == sidecar;
+    other.backgroundTask == backgroundTask &&
+    other.faceDetection == faceDetection &&
+    other.library_ == library_ &&
+    other.metadataExtraction == metadataExtraction &&
+    other.migration == migration &&
+    other.notifications == notifications &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.smartSearch == smartSearch &&
+    other.thumbnailGeneration == thumbnailGeneration &&
+    other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGeneration.hashCode) +
-    (metadataExtraction.hashCode) +
-    (videoConversion.hashCode) +
-    (objectTagging.hashCode) +
-    (clipEncoding.hashCode) +
-    (storageTemplateMigration.hashCode) +
     (backgroundTask.hashCode) +
+    (faceDetection.hashCode) +
+    (library_.hashCode) +
+    (metadataExtraction.hashCode) +
+    (migration.hashCode) +
+    (notifications.hashCode) +
     (search.hashCode) +
-    (recognizeFaces.hashCode) +
-    (sidecar.hashCode);
+    (sidecar.hashCode) +
+    (smartSearch.hashCode) +
+    (thumbnailGeneration.hashCode) +
+    (videoConversion.hashCode);
 
   @override
-  String toString() => 'SystemConfigJobDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar]';
+  String toString() => 'SystemConfigJobDto[backgroundTask=$backgroundTask, faceDetection=$faceDetection, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'videoConversion'] = this.videoConversion;
-      json[r'objectTagging'] = this.objectTagging;
-      json[r'clipEncoding'] = this.clipEncoding;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'faceDetection'] = this.faceDetection;
+      json[r'library'] = this.library_;
+      json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
+      json[r'notifications'] = this.notifications;
       json[r'search'] = this.search;
-      json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'sidecar'] = this.sidecar;
+      json[r'smartSearch'] = this.smartSearch;
+      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+      json[r'videoConversion'] = this.videoConversion;
     return json;
   }
 
@@ -94,20 +100,22 @@ class SystemConfigJobDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SystemConfigJobDto? fromJson(dynamic value) {
+    upgradeDto(value, "SystemConfigJobDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigJobDto(
-        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
-        metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
-        videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
-        objectTagging: JobSettingsDto.fromJson(json[r'objectTagging'])!,
-        clipEncoding: JobSettingsDto.fromJson(json[r'clipEncoding'])!,
-        storageTemplateMigration: JobSettingsDto.fromJson(json[r'storageTemplateMigration'])!,
         backgroundTask: JobSettingsDto.fromJson(json[r'backgroundTask'])!,
+        faceDetection: JobSettingsDto.fromJson(json[r'faceDetection'])!,
+        library_: JobSettingsDto.fromJson(json[r'library'])!,
+        metadataExtraction: JobSettingsDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobSettingsDto.fromJson(json[r'migration'])!,
+        notifications: JobSettingsDto.fromJson(json[r'notifications'])!,
         search: JobSettingsDto.fromJson(json[r'search'])!,
-        recognizeFaces: JobSettingsDto.fromJson(json[r'recognizeFaces'])!,
         sidecar: JobSettingsDto.fromJson(json[r'sidecar'])!,
+        smartSearch: JobSettingsDto.fromJson(json[r'smartSearch'])!,
+        thumbnailGeneration: JobSettingsDto.fromJson(json[r'thumbnailGeneration'])!,
+        videoConversion: JobSettingsDto.fromJson(json[r'videoConversion'])!,
       );
     }
     return null;
@@ -155,16 +163,17 @@ class SystemConfigJobDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnailGeneration',
-    'metadataExtraction',
-    'videoConversion',
-    'objectTagging',
-    'clipEncoding',
-    'storageTemplateMigration',
     'backgroundTask',
+    'faceDetection',
+    'library',
+    'metadataExtraction',
+    'migration',
+    'notifications',
     'search',
-    'recognizeFaces',
     'sidecar',
+    'smartSearch',
+    'thumbnailGeneration',
+    'videoConversion',
   };
 }
 

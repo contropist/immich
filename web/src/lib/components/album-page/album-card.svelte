@@ -1,133 +1,99 @@
 <script lang="ts">
-	import noThumbnailUrl from '$lib/assets/no-thumbnail.png';
-	import { locale } from '$lib/stores/preferences.store';
-	import { AlbumResponseDto, api, ThumbnailFormat, UserResponseDto } from '@api';
-	import { createEventDispatcher, onMount } from 'svelte';
-	import DotsVertical from 'svelte-material-icons/DotsVertical.svelte';
-	import IconButton from '../elements/buttons/icon-button.svelte';
-	import type { OnClick, OnShowContextMenu } from './album-card';
+  import { user } from '$lib/stores/user.store';
+  import type { AlbumResponseDto } from '@immich/sdk';
+  import { mdiDotsVertical } from '@mdi/js';
+  import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
+  import { getShortDateRange } from '$lib/utils/date-time';
+  import AlbumCover from '$lib/components/album-page/album-cover.svelte';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
-	export let album: AlbumResponseDto;
-	export let isSharingView = false;
-	export let user: UserResponseDto;
-	export let showItemCount = true;
-	export let showContextMenu = true;
+  interface Props {
+    album: AlbumResponseDto;
+    showOwner?: boolean;
+    showDateRange?: boolean;
+    showItemCount?: boolean;
+    preload?: boolean;
+    onShowContextMenu?: ((position: ContextMenuPosition) => unknown) | undefined;
+  }
 
-	$: imageData = album.albumThumbnailAssetId
-		? api.getAssetThumbnailUrl(album.albumThumbnailAssetId, ThumbnailFormat.Webp)
-		: noThumbnailUrl;
+  let {
+    album,
+    showOwner = false,
+    showDateRange = false,
+    showItemCount = false,
+    preload = false,
+    onShowContextMenu = undefined,
+  }: Props = $props();
 
-	const dispatchClick = createEventDispatcher<OnClick>();
-	const dispatchShowContextMenu = createEventDispatcher<OnShowContextMenu>();
-
-	const loadHighQualityThumbnail = async (thubmnailId: string | null) => {
-		if (thubmnailId == null) {
-			return;
-		}
-
-		const { data } = await api.assetApi.getAssetThumbnail(
-			{
-				id: thubmnailId,
-				format: ThumbnailFormat.Jpeg
-			},
-			{
-				responseType: 'blob'
-			}
-		);
-
-		if (data instanceof Blob) {
-			return URL.createObjectURL(data);
-		}
-	};
-
-	const showAlbumContextMenu = (e: MouseEvent) => {
-		dispatchShowContextMenu('showalbumcontextmenu', {
-			x: e.clientX,
-			y: e.clientY
-		});
-	};
-
-	onMount(async () => {
-		imageData = (await loadHighQualityThumbnail(album.albumThumbnailAssetId)) || noThumbnailUrl;
-	});
-
-	const getAlbumOwnerInfo = async (): Promise<UserResponseDto> => {
-		const { data } = await api.userApi.getUserById({ userId: album.ownerId });
-
-		return data;
-	};
+  const showAlbumContextMenu = (e: MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onShowContextMenu?.(getContextMenuPositionFromEvent(e));
+  };
 </script>
 
 <div
-	class="group hover:cursor-pointer mt-4 border-[3px] border-transparent dark:hover:border-immich-dark-primary/75 hover:border-immich-primary/75 rounded-3xl p-5 relative"
-	on:click={() => dispatchClick('click', album)}
-	on:keydown={() => dispatchClick('click', album)}
-	data-testid="album-card"
+  class="group relative rounded-2xl border border-transparent p-5 hover:bg-gray-100 hover:border-gray-200 dark:hover:border-gray-800 dark:hover:bg-gray-900"
+  data-testid="album-card"
 >
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	{#if showContextMenu}
-		<div
-			id={`icon-${album.id}`}
-			class="absolute top-6 right-6 z-10"
-			on:click|stopPropagation|preventDefault={showAlbumContextMenu}
-			data-testid="context-button-parent"
-		>
-			<IconButton color="overlay-primary">
-				<DotsVertical size="20" />
-			</IconButton>
-		</div>
-	{/if}
+  {#if onShowContextMenu}
+    <div
+      id="icon-{album.id}"
+      class="absolute right-6 top-6 z-10 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
+      data-testid="context-button-parent"
+    >
+      <CircleIconButton
+        color="opaque"
+        title={$t('show_album_options')}
+        icon={mdiDotsVertical}
+        size="20"
+        padding="2"
+        class="icon-white-drop-shadow"
+        onclick={showAlbumContextMenu}
+      />
+    </div>
+  {/if}
 
-	<div class={`aspect-square relative`}>
-		<img
-			src={imageData}
-			alt={album.id}
-			class={`object-cover h-full w-full transition-all z-0 rounded-3xl duration-300 hover:shadow-lg`}
-			data-testid="album-image"
-			draggable="false"
-		/>
-		<div
-			class="w-full h-full absolute top-0 rounded-3xl {isSharingView
-				? 'group-hover:bg-yellow-800/25'
-				: 'group-hover:bg-indigo-800/25'} "
-		/>
-	</div>
+  <AlbumCover {album} {preload} class="transition-all duration-300 hover:shadow-lg" />
 
-	<div class="mt-4">
-		<p
-			class="text-xl font-semibold dark:text-immich-dark-primary text-immich-primary w-full truncate"
-			data-testid="album-name"
-			title={album.albumName}
-		>
-			{album.albumName}
-		</p>
+  <div class="mt-4">
+    <p
+      class="w-full leading-6 text-lg line-clamp-2 font-semibold text-black dark:text-white group-hover:text-immich-primary dark:group-hover:text-immich-dark-primary"
+      data-testid="album-name"
+      title={album.albumName}
+    >
+      {album.albumName}
+    </p>
 
-		<span class="text-sm flex gap-2 dark:text-immich-dark-fg" data-testid="album-details">
-			{#if showItemCount}
-				<p>
-					{album.assetCount.toLocaleString($locale)}
-					{album.assetCount == 1 ? `item` : `items`}
-				</p>
-			{/if}
+    {#if showDateRange && album.startDate && album.endDate}
+      <p class="flex text-sm dark:text-immich-dark-fg capitalize">
+        {getShortDateRange(album.startDate, album.endDate)}
+      </p>
+    {/if}
 
-			{#if isSharingView || album.shared}
-				<p>·</p>
-			{/if}
+    <span class="flex gap-2 text-sm dark:text-immich-dark-fg" data-testid="album-details">
+      {#if showItemCount}
+        <p>
+          {$t('items_count', { values: { count: album.assetCount } })}
+        </p>
+      {/if}
 
-			{#if isSharingView}
-				{#await getAlbumOwnerInfo() then albumOwner}
-					{#if user.email == albumOwner.email}
-						<p>Owned</p>
-					{:else}
-						<p>
-							Shared by {albumOwner.firstName}
-							{albumOwner.lastName}
-						</p>
-					{/if}
-				{/await}
-			{:else if album.shared}
-				<p>Shared</p>
-			{/if}
-		</span>
-	</div>
+      {#if (showOwner || album.shared) && showItemCount}
+        <p>•</p>
+      {/if}
+
+      {#if showOwner}
+        {#if $user.id === album.ownerId}
+          <p>{$t('owned')}</p>
+        {:else if album.owner}
+          <p>{$t('shared_by_user', { values: { user: album.owner.name } })}</p>
+        {:else}
+          <p>{$t('shared')}</p>
+        {/if}
+      {:else if album.shared}
+        <p>{$t('shared')}</p>
+      {/if}
+    </span>
+  </div>
 </div>

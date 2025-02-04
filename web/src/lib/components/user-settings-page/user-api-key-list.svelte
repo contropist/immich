@@ -1,177 +1,176 @@
 <script lang="ts">
-	import { api, APIKeyResponseDto } from '@api';
-	import { onMount } from 'svelte';
-	import PencilOutline from 'svelte-material-icons/PencilOutline.svelte';
-	import TrashCanOutline from 'svelte-material-icons/TrashCanOutline.svelte';
-	import { fade } from 'svelte/transition';
-	import { handleError } from '../../utils/handle-error';
-	import APIKeyForm from '../forms/api-key-form.svelte';
-	import APIKeySecret from '../forms/api-key-secret.svelte';
-	import ConfirmDialogue from '../shared-components/confirm-dialogue.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import { locale } from '$lib/stores/preferences.store';
-	import Button from '../elements/buttons/button.svelte';
+  import { locale } from '$lib/stores/preferences.store';
+  import {
+    createApiKey,
+    deleteApiKey,
+    getApiKeys,
+    Permission,
+    updateApiKey,
+    type ApiKeyResponseDto,
+  } from '@immich/sdk';
+  import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { fade } from 'svelte/transition';
+  import { handleError } from '../../utils/handle-error';
+  import Button from '../elements/buttons/button.svelte';
+  import APIKeyForm from '../forms/api-key-form.svelte';
+  import APIKeySecret from '../forms/api-key-secret.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { dialogController } from '$lib/components/shared-components/dialog/dialog';
+  import { t } from 'svelte-i18n';
 
-	let keys: APIKeyResponseDto[] = [];
+  interface Props {
+    keys: ApiKeyResponseDto[];
+  }
 
-	let newKey: Partial<APIKeyResponseDto> | null = null;
-	let editKey: APIKeyResponseDto | null = null;
-	let deleteKey: APIKeyResponseDto | null = null;
-	let secret = '';
+  let { keys = $bindable() }: Props = $props();
 
-	const format: Intl.DateTimeFormatOptions = {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric'
-	};
+  let newKey: { name: string } | null = $state(null);
+  let editKey: ApiKeyResponseDto | null = $state(null);
+  let secret = $state('');
 
-	onMount(() => {
-		refreshKeys();
-	});
+  const format: Intl.DateTimeFormatOptions = {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  };
 
-	async function refreshKeys() {
-		const { data } = await api.keyApi.getKeys();
-		keys = data;
-	}
+  async function refreshKeys() {
+    keys = await getApiKeys();
+  }
 
-	const handleCreate = async (event: CustomEvent<APIKeyResponseDto>) => {
-		try {
-			const dto = event.detail;
-			const { data } = await api.keyApi.createKey({ aPIKeyCreateDto: dto });
-			secret = data.secret;
-		} catch (error) {
-			handleError(error, 'Unable to create a new API Key');
-		} finally {
-			await refreshKeys();
-			newKey = null;
-		}
-	};
+  const handleCreate = async ({ name }: { name: string }) => {
+    try {
+      const data = await createApiKey({
+        apiKeyCreateDto: {
+          name,
+          permissions: [Permission.All],
+        },
+      });
+      secret = data.secret;
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_create_api_key'));
+    } finally {
+      await refreshKeys();
+      newKey = null;
+    }
+  };
 
-	const handleUpdate = async (event: CustomEvent<APIKeyResponseDto>) => {
-		if (!editKey) {
-			return;
-		}
+  const handleUpdate = async (detail: Partial<ApiKeyResponseDto>) => {
+    if (!editKey || !detail.name) {
+      return;
+    }
 
-		const dto = event.detail;
+    try {
+      await updateApiKey({ id: editKey.id, apiKeyUpdateDto: { name: detail.name } });
+      notificationController.show({
+        message: $t('saved_api_key'),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_api_key'));
+    } finally {
+      await refreshKeys();
+      editKey = null;
+    }
+  };
 
-		try {
-			await api.keyApi.updateKey({ id: editKey.id, aPIKeyUpdateDto: { name: dto.name } });
-			notificationController.show({
-				message: `Saved API Key`,
-				type: NotificationType.Info
-			});
-		} catch (error) {
-			handleError(error, 'Unable to save API Key');
-		} finally {
-			await refreshKeys();
-			editKey = null;
-		}
-	};
+  const handleDelete = async (key: ApiKeyResponseDto) => {
+    const isConfirmed = await dialogController.show({ prompt: $t('delete_api_key_prompt') });
+    if (!isConfirmed) {
+      return;
+    }
 
-	const handleDelete = async () => {
-		if (!deleteKey) {
-			return;
-		}
-
-		try {
-			await api.keyApi.deleteKey({ id: deleteKey.id });
-			notificationController.show({
-				message: `Removed API Key: ${deleteKey.name}`,
-				type: NotificationType.Info
-			});
-		} catch (error) {
-			handleError(error, 'Unable to remove API Key');
-		} finally {
-			await refreshKeys();
-			deleteKey = null;
-		}
-	};
+    try {
+      await deleteApiKey({ id: key.id });
+      notificationController.show({
+        message: $t('removed_api_key', { values: { name: key.name } }),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_remove_api_key'));
+    } finally {
+      await refreshKeys();
+    }
+  };
 </script>
 
 {#if newKey}
-	<APIKeyForm
-		title="New API Key"
-		submitText="Create"
-		apiKey={newKey}
-		on:submit={handleCreate}
-		on:cancel={() => (newKey = null)}
-	/>
+  <APIKeyForm
+    title={$t('new_api_key')}
+    submitText={$t('create')}
+    apiKey={newKey}
+    onSubmit={(key) => handleCreate(key)}
+    onCancel={() => (newKey = null)}
+  />
 {/if}
 
 {#if secret}
-	<APIKeySecret {secret} on:done={() => (secret = '')} />
+  <APIKeySecret {secret} onDone={() => (secret = '')} />
 {/if}
 
 {#if editKey}
-	<APIKeyForm
-		submitText="Save"
-		apiKey={editKey}
-		on:submit={handleUpdate}
-		on:cancel={() => (editKey = null)}
-	/>
-{/if}
-
-{#if deleteKey}
-	<ConfirmDialogue
-		prompt="Are you sure you want to delete this API Key?"
-		on:confirm={() => handleDelete()}
-		on:cancel={() => (deleteKey = null)}
-	/>
+  <APIKeyForm
+    title={$t('api_key')}
+    submitText={$t('save')}
+    apiKey={editKey}
+    onSubmit={(key) => handleUpdate(key)}
+    onCancel={() => (editKey = null)}
+  />
 {/if}
 
 <section class="my-4">
-	<div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
-		<div class="flex justify-end mb-2">
-			<Button size="sm" on:click={() => (newKey = { name: 'API Key' })}>New API Key</Button>
-		</div>
+  <div class="flex flex-col gap-2" in:fade={{ duration: 500 }}>
+    <div class="mb-2 flex justify-end">
+      <Button size="sm" onclick={() => (newKey = { name: $t('api_key') })}>{$t('new_api_key')}</Button>
+    </div>
 
-		{#if keys.length > 0}
-			<table class="text-left w-full">
-				<thead
-					class="border rounded-md mb-4 bg-gray-50 flex text-immich-primary w-full h-12 dark:bg-immich-dark-gray dark:text-immich-dark-primary dark:border-immich-dark-gray"
-				>
-					<tr class="flex w-full place-items-center">
-						<th class="text-center w-1/3 font-medium text-sm">Name</th>
-						<th class="text-center w-1/3 font-medium text-sm">Created</th>
-						<th class="text-center w-1/3 font-medium text-sm">Action</th>
-					</tr>
-				</thead>
-				<tbody class="overflow-y-auto rounded-md w-full block border dark:border-immich-dark-gray">
-					{#each keys as key, i}
-						{#key key.id}
-							<tr
-								class={`text-center flex place-items-center w-full h-[80px] dark:text-immich-dark-fg ${
-									i % 2 == 0
-										? 'bg-immich-gray dark:bg-immich-dark-gray/75'
-										: 'bg-immich-bg dark:bg-immich-dark-gray/50'
-								}`}
-							>
-								<td class="text-sm px-4 w-1/3 text-ellipsis">{key.name}</td>
-								<td class="text-sm px-4 w-1/3 text-ellipsis"
-									>{new Date(key.createdAt).toLocaleDateString($locale, format)}
-								</td>
-								<td class="text-sm px-4 w-1/3 text-ellipsis">
-									<button
-										on:click={() => (editKey = key)}
-										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
-									>
-										<PencilOutline size="16" />
-									</button>
-									<button
-										on:click={() => (deleteKey = key)}
-										class="bg-immich-primary dark:bg-immich-dark-primary text-gray-100 dark:text-gray-700 rounded-full p-3 transition-all duration-150 hover:bg-immich-primary/75"
-									>
-										<TrashCanOutline size="16" />
-									</button>
-								</td>
-							</tr>
-						{/key}
-					{/each}
-				</tbody>
-			</table>
-		{/if}
-	</div>
+    {#if keys.length > 0}
+      <table class="w-full text-left">
+        <thead
+          class="mb-4 flex h-12 w-full rounded-md border bg-gray-50 text-immich-primary dark:border-immich-dark-gray dark:bg-immich-dark-gray dark:text-immich-dark-primary"
+        >
+          <tr class="flex w-full place-items-center">
+            <th class="w-1/3 text-center text-sm font-medium">{$t('name')}</th>
+            <th class="w-1/3 text-center text-sm font-medium">{$t('created')}</th>
+            <th class="w-1/3 text-center text-sm font-medium">{$t('action')}</th>
+          </tr>
+        </thead>
+        <tbody class="block w-full overflow-y-auto rounded-md border dark:border-immich-dark-gray">
+          {#each keys as key, index}
+            {#key key.id}
+              <tr
+                class={`flex h-[80px] w-full place-items-center text-center dark:text-immich-dark-fg ${
+                  index % 2 == 0
+                    ? 'bg-immich-gray dark:bg-immich-dark-gray/75'
+                    : 'bg-immich-bg dark:bg-immich-dark-gray/50'
+                }`}
+              >
+                <td class="w-1/3 text-ellipsis px-4 text-sm">{key.name}</td>
+                <td class="w-1/3 text-ellipsis px-4 text-sm"
+                  >{new Date(key.createdAt).toLocaleDateString($locale, format)}
+                </td>
+                <td class="flex flex-row flex-wrap justify-center gap-x-2 gap-y-1 w-1/3">
+                  <CircleIconButton
+                    color="primary"
+                    icon={mdiPencilOutline}
+                    title={$t('edit_key')}
+                    size="16"
+                    onclick={() => (editKey = key)}
+                  />
+                  <CircleIconButton
+                    color="primary"
+                    icon={mdiTrashCanOutline}
+                    title={$t('delete_key')}
+                    size="16"
+                    onclick={() => handleDelete(key)}
+                  />
+                </td>
+              </tr>
+            {/key}
+          {/each}
+        </tbody>
+      </table>
+    {/if}
+  </div>
 </section>

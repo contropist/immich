@@ -1,10 +1,10 @@
-import { IMachineLearningRepository } from '@app/domain';
+import { IMachineLearningRepository } from 'src/interfaces/machine-learning.interface';
+import { Mocked, vitest } from 'vitest';
 
-export const newMachineLearningRepositoryMock = (): jest.Mocked<IMachineLearningRepository> => {
+export const newMachineLearningRepositoryMock = (): Mocked<IMachineLearningRepository> => {
   return {
-    classifyImage: jest.fn(),
-    encodeImage: jest.fn(),
-    encodeText: jest.fn(),
-    detectFaces: jest.fn(),
+    encodeImage: vitest.fn(),
+    encodeText: vitest.fn(),
+    detectFaces: vitest.fn(),
   };
 };

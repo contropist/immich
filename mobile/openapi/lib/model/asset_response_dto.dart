@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,60 +13,46 @@ part of openapi.api;
 class AssetResponseDto {
   /// Returns a new [AssetResponseDto] instance.
   AssetResponseDto({
-    required this.type,
-    required this.id,
+    required this.checksum,
     required this.deviceAssetId,
-    required this.ownerId,
     required this.deviceId,
-    required this.originalPath,
-    required this.originalFileName,
-    required this.resized,
-    required this.thumbhash,
-    required this.fileCreatedAt,
-    required this.fileModifiedAt,
-    required this.updatedAt,
-    required this.isFavorite,
-    required this.isArchived,
-    required this.mimeType,
+    this.duplicateId,
     required this.duration,
     this.exifInfo,
-    this.smartInfo,
+    required this.fileCreatedAt,
+    required this.fileModifiedAt,
+    required this.hasMetadata,
+    required this.id,
+    required this.isArchived,
+    required this.isFavorite,
+    required this.isOffline,
+    required this.isTrashed,
+    this.libraryId,
     this.livePhotoVideoId,
-    this.tags = const [],
+    required this.localDateTime,
+    required this.originalFileName,
+    this.originalMimeType,
+    required this.originalPath,
+    this.owner,
+    required this.ownerId,
     this.people = const [],
-    required this.checksum,
+    this.resized,
+    this.stack,
+    this.tags = const [],
+    required this.thumbhash,
+    required this.type,
+    this.unassignedFaces = const [],
+    required this.updatedAt,
   });
 
-  AssetTypeEnum type;
-
-  String id;
+  /// base64 encoded sha1 hash
+  String checksum;
 
   String deviceAssetId;
 
-  String ownerId;
-
   String deviceId;
 
-  String originalPath;
-
-  String originalFileName;
-
-  bool resized;
-
-  /// base64 encoded thumbhash
-  String? thumbhash;
-
-  DateTime fileCreatedAt;
-
-  DateTime fileModifiedAt;
-
-  DateTime updatedAt;
-
-  bool isFavorite;
-
-  bool isArchived;
-
-  String? mimeType;
+  String? duplicateId;
 
   String duration;
 
@@ -78,101 +64,153 @@ class AssetResponseDto {
   ///
   ExifResponseDto? exifInfo;
 
+  DateTime fileCreatedAt;
+
+  DateTime fileModifiedAt;
+
+  bool hasMetadata;
+
+  String id;
+
+  bool isArchived;
+
+  bool isFavorite;
+
+  bool isOffline;
+
+  bool isTrashed;
+
+  /// This property was deprecated in v1.106.0
+  String? libraryId;
+
+  String? livePhotoVideoId;
+
+  DateTime localDateTime;
+
+  String originalFileName;
+
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  SmartInfoResponseDto? smartInfo;
+  String? originalMimeType;
 
-  String? livePhotoVideoId;
+  String originalPath;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  UserResponseDto? owner;
+
+  String ownerId;
+
+  List<PersonWithFacesResponseDto> people;
+
+  /// This property was deprecated in v1.113.0
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? resized;
+
+  AssetStackResponseDto? stack;
 
   List<TagResponseDto> tags;
 
-  List<PersonResponseDto> people;
+  String? thumbhash;
 
-  /// base64 encoded sha1 hash
-  String checksum;
+  AssetTypeEnum type;
+
+  List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
+
+  DateTime updatedAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
-     other.type == type &&
-     other.id == id &&
-     other.deviceAssetId == deviceAssetId &&
-     other.ownerId == ownerId &&
-     other.deviceId == deviceId &&
-     other.originalPath == originalPath &&
-     other.originalFileName == originalFileName &&
-     other.resized == resized &&
-     other.thumbhash == thumbhash &&
-     other.fileCreatedAt == fileCreatedAt &&
-     other.fileModifiedAt == fileModifiedAt &&
-     other.updatedAt == updatedAt &&
-     other.isFavorite == isFavorite &&
-     other.isArchived == isArchived &&
-     other.mimeType == mimeType &&
-     other.duration == duration &&
-     other.exifInfo == exifInfo &&
-     other.smartInfo == smartInfo &&
-     other.livePhotoVideoId == livePhotoVideoId &&
-     other.tags == tags &&
-     other.people == people &&
-     other.checksum == checksum;
+    other.checksum == checksum &&
+    other.deviceAssetId == deviceAssetId &&
+    other.deviceId == deviceId &&
+    other.duplicateId == duplicateId &&
+    other.duration == duration &&
+    other.exifInfo == exifInfo &&
+    other.fileCreatedAt == fileCreatedAt &&
+    other.fileModifiedAt == fileModifiedAt &&
+    other.hasMetadata == hasMetadata &&
+    other.id == id &&
+    other.isArchived == isArchived &&
+    other.isFavorite == isFavorite &&
+    other.isOffline == isOffline &&
+    other.isTrashed == isTrashed &&
+    other.libraryId == libraryId &&
+    other.livePhotoVideoId == livePhotoVideoId &&
+    other.localDateTime == localDateTime &&
+    other.originalFileName == originalFileName &&
+    other.originalMimeType == originalMimeType &&
+    other.originalPath == originalPath &&
+    other.owner == owner &&
+    other.ownerId == ownerId &&
+    _deepEquality.equals(other.people, people) &&
+    other.resized == resized &&
+    other.stack == stack &&
+    _deepEquality.equals(other.tags, tags) &&
+    other.thumbhash == thumbhash &&
+    other.type == type &&
+    _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
+    other.updatedAt == updatedAt;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (id.hashCode) +
+    (checksum.hashCode) +
     (deviceAssetId.hashCode) +
-    (ownerId.hashCode) +
     (deviceId.hashCode) +
-    (originalPath.hashCode) +
-    (originalFileName.hashCode) +
-    (resized.hashCode) +
-    (thumbhash == null ? 0 : thumbhash!.hashCode) +
-    (fileCreatedAt.hashCode) +
-    (fileModifiedAt.hashCode) +
-    (updatedAt.hashCode) +
-    (isFavorite.hashCode) +
-    (isArchived.hashCode) +
-    (mimeType == null ? 0 : mimeType!.hashCode) +
+    (duplicateId == null ? 0 : duplicateId!.hashCode) +
     (duration.hashCode) +
     (exifInfo == null ? 0 : exifInfo!.hashCode) +
-    (smartInfo == null ? 0 : smartInfo!.hashCode) +
+    (fileCreatedAt.hashCode) +
+    (fileModifiedAt.hashCode) +
+    (hasMetadata.hashCode) +
+    (id.hashCode) +
+    (isArchived.hashCode) +
+    (isFavorite.hashCode) +
+    (isOffline.hashCode) +
+    (isTrashed.hashCode) +
+    (libraryId == null ? 0 : libraryId!.hashCode) +
     (livePhotoVideoId == null ? 0 : livePhotoVideoId!.hashCode) +
-    (tags.hashCode) +
+    (localDateTime.hashCode) +
+    (originalFileName.hashCode) +
+    (originalMimeType == null ? 0 : originalMimeType!.hashCode) +
+    (originalPath.hashCode) +
+    (owner == null ? 0 : owner!.hashCode) +
+    (ownerId.hashCode) +
     (people.hashCode) +
-    (checksum.hashCode);
+    (resized == null ? 0 : resized!.hashCode) +
+    (stack == null ? 0 : stack!.hashCode) +
+    (tags.hashCode) +
+    (thumbhash == null ? 0 : thumbhash!.hashCode) +
+    (type.hashCode) +
+    (unassignedFaces.hashCode) +
+    (updatedAt.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[type=$type, id=$id, deviceAssetId=$deviceAssetId, ownerId=$ownerId, deviceId=$deviceId, originalPath=$originalPath, originalFileName=$originalFileName, resized=$resized, thumbhash=$thumbhash, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, updatedAt=$updatedAt, isFavorite=$isFavorite, isArchived=$isArchived, mimeType=$mimeType, duration=$duration, exifInfo=$exifInfo, smartInfo=$smartInfo, livePhotoVideoId=$livePhotoVideoId, tags=$tags, people=$people, checksum=$checksum]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, deviceAssetId=$deviceAssetId, deviceId=$deviceId, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, id=$id, isArchived=$isArchived, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
-      json[r'id'] = this.id;
+      json[r'checksum'] = this.checksum;
       json[r'deviceAssetId'] = this.deviceAssetId;
-      json[r'ownerId'] = this.ownerId;
       json[r'deviceId'] = this.deviceId;
-      json[r'originalPath'] = this.originalPath;
-      json[r'originalFileName'] = this.originalFileName;
-      json[r'resized'] = this.resized;
-    if (this.thumbhash != null) {
-      json[r'thumbhash'] = this.thumbhash;
+    if (this.duplicateId != null) {
+      json[r'duplicateId'] = this.duplicateId;
     } else {
-    //  json[r'thumbhash'] = null;
-    }
-      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
-      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
-      json[r'isFavorite'] = this.isFavorite;
-      json[r'isArchived'] = this.isArchived;
-    if (this.mimeType != null) {
-      json[r'mimeType'] = this.mimeType;
-    } else {
-    //  json[r'mimeType'] = null;
+    //  json[r'duplicateId'] = null;
     }
       json[r'duration'] = this.duration;
     if (this.exifInfo != null) {
@@ -180,19 +218,58 @@ class AssetResponseDto {
     } else {
     //  json[r'exifInfo'] = null;
     }
-    if (this.smartInfo != null) {
-      json[r'smartInfo'] = this.smartInfo;
+      json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
+      json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
+      json[r'hasMetadata'] = this.hasMetadata;
+      json[r'id'] = this.id;
+      json[r'isArchived'] = this.isArchived;
+      json[r'isFavorite'] = this.isFavorite;
+      json[r'isOffline'] = this.isOffline;
+      json[r'isTrashed'] = this.isTrashed;
+    if (this.libraryId != null) {
+      json[r'libraryId'] = this.libraryId;
     } else {
-    //  json[r'smartInfo'] = null;
+    //  json[r'libraryId'] = null;
     }
     if (this.livePhotoVideoId != null) {
       json[r'livePhotoVideoId'] = this.livePhotoVideoId;
     } else {
     //  json[r'livePhotoVideoId'] = null;
     }
-      json[r'tags'] = this.tags;
+      json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
+      json[r'originalFileName'] = this.originalFileName;
+    if (this.originalMimeType != null) {
+      json[r'originalMimeType'] = this.originalMimeType;
+    } else {
+    //  json[r'originalMimeType'] = null;
+    }
+      json[r'originalPath'] = this.originalPath;
+    if (this.owner != null) {
+      json[r'owner'] = this.owner;
+    } else {
+    //  json[r'owner'] = null;
+    }
+      json[r'ownerId'] = this.ownerId;
       json[r'people'] = this.people;
-      json[r'checksum'] = this.checksum;
+    if (this.resized != null) {
+      json[r'resized'] = this.resized;
+    } else {
+    //  json[r'resized'] = null;
+    }
+    if (this.stack != null) {
+      json[r'stack'] = this.stack;
+    } else {
+    //  json[r'stack'] = null;
+    }
+      json[r'tags'] = this.tags;
+    if (this.thumbhash != null) {
+      json[r'thumbhash'] = this.thumbhash;
+    } else {
+    //  json[r'thumbhash'] = null;
+    }
+      json[r'type'] = this.type;
+      json[r'unassignedFaces'] = this.unassignedFaces;
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
     return json;
   }
 
@@ -200,32 +277,41 @@ class AssetResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AssetResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AssetResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AssetResponseDto(
-        type: AssetTypeEnum.fromJson(json[r'type'])!,
-        id: mapValueOfType<String>(json, r'id')!,
+        checksum: mapValueOfType<String>(json, r'checksum')!,
         deviceAssetId: mapValueOfType<String>(json, r'deviceAssetId')!,
-        ownerId: mapValueOfType<String>(json, r'ownerId')!,
         deviceId: mapValueOfType<String>(json, r'deviceId')!,
-        originalPath: mapValueOfType<String>(json, r'originalPath')!,
-        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        resized: mapValueOfType<bool>(json, r'resized')!,
-        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
-        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', '')!,
-        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', '')!,
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
-        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
-        mimeType: mapValueOfType<String>(json, r'mimeType'),
+        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
         duration: mapValueOfType<String>(json, r'duration')!,
         exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
-        smartInfo: SmartInfoResponseDto.fromJson(json[r'smartInfo']),
+        fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
+        fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
+        hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
+        id: mapValueOfType<String>(json, r'id')!,
+        isArchived: mapValueOfType<bool>(json, r'isArchived')!,
+        isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
+        isOffline: mapValueOfType<bool>(json, r'isOffline')!,
+        isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
+        libraryId: mapValueOfType<String>(json, r'libraryId'),
         livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        localDateTime: mapDateTime(json, r'localDateTime', r'')!,
+        originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
+        originalMimeType: mapValueOfType<String>(json, r'originalMimeType'),
+        originalPath: mapValueOfType<String>(json, r'originalPath')!,
+        owner: UserResponseDto.fromJson(json[r'owner']),
+        ownerId: mapValueOfType<String>(json, r'ownerId')!,
+        people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
+        resized: mapValueOfType<bool>(json, r'resized'),
+        stack: AssetStackResponseDto.fromJson(json[r'stack']),
         tags: TagResponseDto.listFromJson(json[r'tags']),
-        people: PersonResponseDto.listFromJson(json[r'people']),
-        checksum: mapValueOfType<String>(json, r'checksum')!,
+        thumbhash: mapValueOfType<String>(json, r'thumbhash'),
+        type: AssetTypeEnum.fromJson(json[r'type'])!,
+        unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
       );
     }
     return null;
@@ -273,23 +359,25 @@ class AssetResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
-    'id',
+    'checksum',
     'deviceAssetId',
-    'ownerId',
     'deviceId',
-    'originalPath',
-    'originalFileName',
-    'resized',
-    'thumbhash',
+    'duration',
     'fileCreatedAt',
     'fileModifiedAt',
-    'updatedAt',
-    'isFavorite',
+    'hasMetadata',
+    'id',
     'isArchived',
-    'mimeType',
-    'duration',
-    'checksum',
+    'isFavorite',
+    'isOffline',
+    'isTrashed',
+    'localDateTime',
+    'originalFileName',
+    'originalPath',
+    'ownerId',
+    'thumbhash',
+    'type',
+    'updatedAt',
   };
 }
 

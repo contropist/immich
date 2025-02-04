@@ -1,122 +1,103 @@
 <script lang="ts">
-	import PlusBoxOutline from 'svelte-material-icons/PlusBoxOutline.svelte';
-	import Link from 'svelte-material-icons/Link.svelte';
-	import { goto } from '$app/navigation';
-	import { api } from '@api';
-	import type { PageData } from './$types';
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import empty2Url from '$lib/assets/empty-2.svg';
-	import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-	import LinkButton from '$lib/components/elements/buttons/link-button.svelte';
-	import { flip } from 'svelte/animate';
-	import AlbumCard from '$lib/components/album-page/album-card.svelte';
-	import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
-	import { AppRoute } from '$lib/constants';
+  import empty2Url from '$lib/assets/empty-2.svg';
+  import Albums from '$lib/components/album-page/albums-list.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import UserAvatar from '$lib/components/shared-components/user-avatar.svelte';
+  import { AppRoute } from '$lib/constants';
+  import {
+    AlbumFilter,
+    AlbumGroupBy,
+    AlbumSortBy,
+    AlbumViewMode,
+    SortOrder,
+    type AlbumViewSettings,
+  } from '$lib/stores/preferences.store';
+  import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+  import { Button, HStack, Text } from '@immich/ui';
+  import { mdiLink, mdiPlusBoxOutline } from '@mdi/js';
+  import { t } from 'svelte-i18n';
+  import type { PageData } from './$types';
 
-	export let data: PageData;
+  interface Props {
+    data: PageData;
+  }
 
-	const createSharedAlbum = async () => {
-		try {
-			const { data: newAlbum } = await api.albumApi.createAlbum({
-				createAlbumDto: {
-					albumName: 'Untitled'
-				}
-			});
+  let { data }: Props = $props();
 
-			goto('/albums/' + newAlbum.id);
-		} catch (e) {
-			notificationController.show({
-				message: 'Error creating album, check console for more details',
-				type: NotificationType.Error
-			});
-
-			console.log('Error [createAlbum] ', e);
-		}
-	};
+  const settings: AlbumViewSettings = {
+    view: AlbumViewMode.Cover,
+    filter: AlbumFilter.Shared,
+    groupBy: AlbumGroupBy.None,
+    groupOrder: SortOrder.Desc,
+    sortBy: AlbumSortBy.MostRecentPhoto,
+    sortOrder: SortOrder.Desc,
+    collapsedGroups: {},
+  };
 </script>
 
-<UserPageLayout user={data.user} title={data.meta.title}>
-	<div class="flex" slot="buttons">
-		<LinkButton on:click={createSharedAlbum}>
-			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
-				<PlusBoxOutline size="18" class="shrink-0" />
-				<span class="max-sm:text-xs leading-none">Create shared album</span>
-			</div>
-		</LinkButton>
+<UserPageLayout title={data.meta.title}>
+  {#snippet buttons()}
+    <HStack gap={0}>
+      <Button
+        leadingIcon={mdiPlusBoxOutline}
+        onclick={() => createAlbumAndRedirect()}
+        size="small"
+        variant="ghost"
+        color="secondary"
+      >
+        <Text class="hidden md:block">{$t('create_album')}</Text>
+      </Button>
+      <Button leadingIcon={mdiLink} href={AppRoute.SHARED_LINKS} size="small" variant="ghost" color="secondary">
+        <Text class="hidden md:block">{$t('shared_links')}</Text>
+      </Button>
+    </HStack>
+  {/snippet}
 
-		<LinkButton on:click={() => goto(AppRoute.SHARED_LINKS)}>
-			<div class="flex place-items-center gap-x-1 text-sm flex-wrap justify-center">
-				<Link size="18" class="shrink-0" />
-				<span class="max-sm:text-xs leading-none">Shared links</span>
-			</div>
-		</LinkButton>
-	</div>
+  <div class="flex flex-col">
+    {#if data.partners.length > 0}
+      <div class="mb-6 mt-2">
+        <div>
+          <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('partners')}</p>
+        </div>
 
-	<div class="flex flex-col">
-		{#if data.partners.length > 0}
-			<div class="mb-6 mt-2">
-				<div>
-					<p class="mb-4 dark:text-immich-dark-fg font-medium">Partners</p>
-				</div>
+        <div class="flex flex-row flex-wrap gap-4">
+          {#each data.partners as partner (partner.id)}
+            <a
+              href="{AppRoute.PARTNERS}/{partner.id}"
+              class="flex gap-4 rounded-lg px-5 py-4 transition-all hover:bg-gray-200 dark:hover:bg-gray-700"
+            >
+              <UserAvatar user={partner} size="lg" />
+              <div class="text-left">
+                <p class="text-immich-fg dark:text-immich-dark-fg">
+                  {partner.name}
+                </p>
+                <p class="text-sm text-immich-fg/75 dark:text-immich-dark-fg/75">
+                  {partner.email}
+                </p>
+              </div>
+            </a>
+          {/each}
+        </div>
+      </div>
 
-				<div class="flex flex-row flex-wrap gap-4">
-					{#each data.partners as partner (partner.id)}
-						<a
-							href="/partners/{partner.id}"
-							class="flex rounded-lg gap-4 py-4 px-5 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-						>
-							<UserAvatar user={partner} size="md" autoColor />
-							<div class="text-left">
-								<p class="text-immich-fg dark:text-immich-dark-fg">
-									{partner.firstName}
-									{partner.lastName}
-								</p>
-								<p class="text-xs text-immich-fg/75 dark:text-immich-dark-fg/75">
-									{partner.email}
-								</p>
-							</div>
-						</a>
-					{/each}
-				</div>
-			</div>
+      <hr class="mb-4 dark:border-immich-dark-gray" />
+    {/if}
 
-			<hr class="dark:border-immich-dark-gray mb-4" />
-		{/if}
+    <div class="mb-6 mt-2">
+      <div>
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('albums')}</p>
+      </div>
 
-		<div class="mb-6 mt-2">
-			<div>
-				<p class="mb-4 dark:text-immich-dark-fg font-medium">Albums</p>
-			</div>
-
-			<div>
-				<!-- Share Album List -->
-				<div class="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))]">
-					{#each data.sharedAlbums as album (album.id)}
-						<a
-							data-sveltekit-preload-data="hover"
-							href={`albums/${album.id}`}
-							animate:flip={{ duration: 200 }}
-						>
-							<AlbumCard {album} user={data.user} isSharingView showContextMenu={false} />
-						</a>
-					{/each}
-				</div>
-
-				<!-- Empty List -->
-				{#if data.sharedAlbums.length === 0}
-					<div
-						class="border dark:border-immich-dark-gray p-5 md:w-[500px] w-2/3 m-auto mt-10 bg-gray-50 dark:bg-immich-dark-gray rounded-3xl flex flex-col place-content-center place-items-center dark:text-immich-dark-fg"
-					>
-						<img src={empty2Url} alt="Empty shared album" width="500" draggable="false" />
-						<p class="text-center text-immich-text-gray-500">
-							Create a shared album to share photos and videos with people in your network
-						</p>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
+      <div>
+        <!-- Shared Album List -->
+        <Albums sharedAlbums={data.sharedAlbums} userSettings={settings} showOwner>
+          <!-- Empty List -->
+          {#snippet empty()}
+            <EmptyPlaceholder text={$t('no_shared_albums_message')} src={empty2Url} />
+          {/snippet}
+        </Albums>
+      </div>
+    </div>
+  </div>
 </UserPageLayout>

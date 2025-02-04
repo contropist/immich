@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -27,6 +27,7 @@ class JobCommand {
   static const pause = JobCommand._(r'pause');
   static const resume = JobCommand._(r'resume');
   static const empty = JobCommand._(r'empty');
+  static const clearFailed = JobCommand._(r'clear-failed');
 
   /// List of all possible values in this [enum][JobCommand].
   static const values = <JobCommand>[
@@ -34,11 +35,12 @@ class JobCommand {
     pause,
     resume,
     empty,
+    clearFailed,
   ];
 
   static JobCommand? fromJson(dynamic value) => JobCommandTypeTransformer().decode(value);
 
-  static List<JobCommand>? listFromJson(dynamic json, {bool growable = false,}) {
+  static List<JobCommand> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <JobCommand>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
@@ -76,6 +78,7 @@ class JobCommandTypeTransformer {
         case r'pause': return JobCommand.pause;
         case r'resume': return JobCommand.resume;
         case r'empty': return JobCommand.empty;
+        case r'clear-failed': return JobCommand.clearFailed;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

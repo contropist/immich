@@ -1,96 +1,124 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition';
-	import CloseCircleOutline from 'svelte-material-icons/CloseCircleOutline.svelte';
-	import InformationOutline from 'svelte-material-icons/InformationOutline.svelte';
-	import WindowClose from 'svelte-material-icons/WindowClose.svelte';
+  import { fade } from 'svelte/transition';
+  import Icon from '$lib/components/elements/icon.svelte';
+  import {
+    isComponentNotification,
+    notificationController,
+    NotificationType,
+    type ComponentNotification,
+    type Notification,
+  } from '$lib/components/shared-components/notification/notification';
+  import { onMount } from 'svelte';
+  import { mdiCloseCircleOutline, mdiInformationOutline, mdiWindowClose } from '@mdi/js';
+  import CircleIconButton from '$lib/components/elements/buttons/circle-icon-button.svelte';
+  import { t } from 'svelte-i18n';
 
-	import {
-		ImmichNotification,
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import { onMount } from 'svelte';
+  interface Props {
+    notification: Notification | ComponentNotification;
+  }
 
-	export let notificationInfo: ImmichNotification;
+  let { notification }: Props = $props();
 
-	let infoPrimaryColor = '#4250AF';
-	let errorPrimaryColor = '#E64132';
+  let icon = $derived(notification.type === NotificationType.Error ? mdiCloseCircleOutline : mdiInformationOutline);
+  let hoverStyle = $derived(notification.action.type === 'discard' ? 'hover:cursor-pointer' : '');
 
-	$: icon =
-		notificationInfo.type === NotificationType.Error ? CloseCircleOutline : InformationOutline;
+  const backgroundColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#E0E2F0',
+    [NotificationType.Error]: '#FBE8E6',
+    [NotificationType.Warning]: '#FFF6DC',
+  };
 
-	$: backgroundColor = () => {
-		if (notificationInfo.type === NotificationType.Info) {
-			return '#E0E2F0';
-		}
+  const borderColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#D8DDFF',
+    [NotificationType.Error]: '#F0E8E7',
+    [NotificationType.Warning]: '#FFE6A5',
+  };
 
-		if (notificationInfo.type === NotificationType.Error) {
-			return '#FBE8E6';
-		}
-	};
+  const primaryColor: Record<NotificationType, string> = {
+    [NotificationType.Info]: '#4250AF',
+    [NotificationType.Error]: '#E64132',
+    [NotificationType.Warning]: '#D08613',
+  };
 
-	$: borderStyle = () => {
-		if (notificationInfo.type === NotificationType.Info) {
-			return '1px solid #D8DDFF';
-		}
+  const buttonStyle: Record<NotificationType, string> = {
+    [NotificationType.Info]: 'text-white bg-immich-primary hover:bg-immich-primary/75',
+    [NotificationType.Error]: 'text-white bg-immich-error hover:bg-immich-error/75',
+    [NotificationType.Warning]: 'text-white bg-immich-warning hover:bg-immich-warning/75',
+  };
 
-		if (notificationInfo.type === NotificationType.Error) {
-			return '1px solid #F0E8E7';
-		}
-	};
+  onMount(() => {
+    const timeoutId = setTimeout(discard, notification.timeout);
+    return () => clearTimeout(timeoutId);
+  });
 
-	$: primaryColor = () => {
-		if (notificationInfo.type === NotificationType.Info) {
-			return infoPrimaryColor;
-		}
+  const discard = () => {
+    notificationController.removeNotificationById(notification.id);
+  };
 
-		if (notificationInfo.type === NotificationType.Error) {
-			return errorPrimaryColor;
-		}
-	};
+  const handleClick = () => {
+    if (notification.action.type === 'discard') {
+      discard();
+    }
+  };
 
-	let removeNotificationTimeout: NodeJS.Timeout | undefined = undefined;
-
-	onMount(() => {
-		removeNotificationTimeout = setTimeout(discard, notificationInfo.timeout);
-		return () => clearTimeout(removeNotificationTimeout);
-	});
-
-	const discard = () => {
-		notificationController.removeNotificationById(notificationInfo.id);
-	};
-
-	const handleClick = () => {
-		const action = notificationInfo.action;
-		if (action.type == 'discard') {
-			discard();
-		} else if (action.type == 'link') {
-			window.open(action.target);
-		}
-	};
+  const handleButtonClick = () => {
+    const button = notification.button;
+    if (button) {
+      discard();
+      return notification.button?.onClick();
+    }
+  };
 </script>
 
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	transition:fade={{ duration: 250 }}
-	style:background-color={backgroundColor()}
-	style:border={borderStyle()}
-	class="min-h-[80px] w-[300px] rounded-2xl z-[999999] shadow-md p-4 mb-4 hover:cursor-pointer"
-	on:click={handleClick}
-	on:keydown={handleClick}
+  transition:fade={{ duration: 250 }}
+  style:background-color={backgroundColor[notification.type]}
+  style:border-color={borderColor[notification.type]}
+  class="border z-[999999] mb-4 min-h-[80px] w-[300px] rounded-2xl p-4 shadow-md {hoverStyle}"
+  onclick={handleClick}
+  onkeydown={handleClick}
 >
-	<div class="flex justify-between">
-		<div class="flex gap-2 place-items-center">
-			<svelte:component this={icon} color={primaryColor()} size="20" />
-			<h2 style:color={primaryColor()} class="font-medium" data-testid="title">
-				{notificationInfo.type.toString()}
-			</h2>
-		</div>
-		<button on:click|stopPropagation={discard}>
-			<svelte:component this={WindowClose} size="20" />
-		</button>
-	</div>
+  <div class="flex justify-between">
+    <div class="flex place-items-center gap-2">
+      <Icon path={icon} color={primaryColor[notification.type]} size="20" />
+      <h2 style:color={primaryColor[notification.type]} class="font-medium" data-testid="title">
+        {#if notification.type == NotificationType.Error}{$t('error')}
+        {:else if notification.type == NotificationType.Warning}{$t('warning')}
+        {:else if notification.type == NotificationType.Info}{$t('info')}{/if}
+      </h2>
+    </div>
+    <CircleIconButton
+      icon={mdiWindowClose}
+      title={$t('close')}
+      class="dark:text-immich-dark-gray"
+      size="20"
+      padding="2"
+      onclick={discard}
+      aria-hidden={true}
+      tabindex={-1}
+    />
+  </div>
 
-	<p class="whitespace-pre-wrap text-sm pl-[28px] pr-[16px]" data-testid="message">
-		{notificationInfo.message}
-	</p>
+  <p class="whitespace-pre-wrap pl-[28px] pr-[16px] text-sm" data-testid="message">
+    {#if isComponentNotification(notification)}
+      <notification.component.type {...notification.component.props} />
+    {:else}
+      {notification.message}
+    {/if}
+  </p>
+
+  {#if notification.button}
+    <p class="pl-[28px] mt-2.5 text-sm">
+      <button
+        type="button"
+        class="{buttonStyle[notification.type]} rounded px-3 pt-1.5 pb-1 transition-all duration-200"
+        onclick={handleButtonClick}
+        aria-hidden="true"
+        tabindex={-1}
+      >
+        {notification.button.text}
+      </button>
+    </p>
+  {/if}
 </div>

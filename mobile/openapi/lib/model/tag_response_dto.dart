@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,44 +13,82 @@ part of openapi.api;
 class TagResponseDto {
   /// Returns a new [TagResponseDto] instance.
   TagResponseDto({
-    required this.type,
+    this.color,
+    required this.createdAt,
     required this.id,
     required this.name,
-    required this.userId,
+    this.parentId,
+    required this.updatedAt,
+    required this.value,
   });
 
-  TagTypeEnum type;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? color;
+
+  DateTime createdAt;
 
   String id;
 
   String name;
 
-  String userId;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? parentId;
+
+  DateTime updatedAt;
+
+  String value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagResponseDto &&
-     other.type == type &&
-     other.id == id &&
-     other.name == name &&
-     other.userId == userId;
+    other.color == color &&
+    other.createdAt == createdAt &&
+    other.id == id &&
+    other.name == name &&
+    other.parentId == parentId &&
+    other.updatedAt == updatedAt &&
+    other.value == value;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
+    (color == null ? 0 : color!.hashCode) +
+    (createdAt.hashCode) +
     (id.hashCode) +
     (name.hashCode) +
-    (userId.hashCode);
+    (parentId == null ? 0 : parentId!.hashCode) +
+    (updatedAt.hashCode) +
+    (value.hashCode);
 
   @override
-  String toString() => 'TagResponseDto[type=$type, id=$id, name=$name, userId=$userId]';
+  String toString() => 'TagResponseDto[color=$color, createdAt=$createdAt, id=$id, name=$name, parentId=$parentId, updatedAt=$updatedAt, value=$value]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
+    if (this.color != null) {
+      json[r'color'] = this.color;
+    } else {
+    //  json[r'color'] = null;
+    }
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'name'] = this.name;
-      json[r'userId'] = this.userId;
+    if (this.parentId != null) {
+      json[r'parentId'] = this.parentId;
+    } else {
+    //  json[r'parentId'] = null;
+    }
+      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
+      json[r'value'] = this.value;
     return json;
   }
 
@@ -58,14 +96,18 @@ class TagResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static TagResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "TagResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return TagResponseDto(
-        type: TagTypeEnum.fromJson(json[r'type'])!,
+        color: mapValueOfType<String>(json, r'color'),
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
         id: mapValueOfType<String>(json, r'id')!,
         name: mapValueOfType<String>(json, r'name')!,
-        userId: mapValueOfType<String>(json, r'userId')!,
+        parentId: mapValueOfType<String>(json, r'parentId'),
+        updatedAt: mapDateTime(json, r'updatedAt', r'')!,
+        value: mapValueOfType<String>(json, r'value')!,
       );
     }
     return null;
@@ -113,10 +155,11 @@ class TagResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
+    'createdAt',
     'id',
     'name',
-    'userId',
+    'updatedAt',
+    'value',
   };
 }
 

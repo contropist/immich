@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -15,6 +15,9 @@ class UpdateAlbumDto {
   UpdateAlbumDto({
     this.albumName,
     this.albumThumbnailAssetId,
+    this.description,
+    this.isActivityEnabled,
+    this.order,
   });
 
   ///
@@ -33,19 +36,49 @@ class UpdateAlbumDto {
   ///
   String? albumThumbnailAssetId;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? description;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? isActivityEnabled;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  AssetOrder? order;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
-     other.albumName == albumName &&
-     other.albumThumbnailAssetId == albumThumbnailAssetId;
+    other.albumName == albumName &&
+    other.albumThumbnailAssetId == albumThumbnailAssetId &&
+    other.description == description &&
+    other.isActivityEnabled == isActivityEnabled &&
+    other.order == order;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (albumName == null ? 0 : albumName!.hashCode) +
-    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode);
+    (albumThumbnailAssetId == null ? 0 : albumThumbnailAssetId!.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
+    (isActivityEnabled == null ? 0 : isActivityEnabled!.hashCode) +
+    (order == null ? 0 : order!.hashCode);
 
   @override
-  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId]';
+  String toString() => 'UpdateAlbumDto[albumName=$albumName, albumThumbnailAssetId=$albumThumbnailAssetId, description=$description, isActivityEnabled=$isActivityEnabled, order=$order]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -59,6 +92,21 @@ class UpdateAlbumDto {
     } else {
     //  json[r'albumThumbnailAssetId'] = null;
     }
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
+    }
+    if (this.isActivityEnabled != null) {
+      json[r'isActivityEnabled'] = this.isActivityEnabled;
+    } else {
+    //  json[r'isActivityEnabled'] = null;
+    }
+    if (this.order != null) {
+      json[r'order'] = this.order;
+    } else {
+    //  json[r'order'] = null;
+    }
     return json;
   }
 
@@ -66,12 +114,16 @@ class UpdateAlbumDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UpdateAlbumDto? fromJson(dynamic value) {
+    upgradeDto(value, "UpdateAlbumDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return UpdateAlbumDto(
         albumName: mapValueOfType<String>(json, r'albumName'),
         albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
+        description: mapValueOfType<String>(json, r'description'),
+        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
+        order: AssetOrder.fromJson(json[r'order']),
       );
     }
     return null;

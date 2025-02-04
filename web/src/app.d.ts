@@ -3,32 +3,55 @@
 // See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare namespace App {
-	interface Locals {
-		user?: import('@api').UserResponseDto;
-		api: import('@api').ImmichApi;
-	}
+  interface PageData {
+    meta: {
+      title: string;
+      description?: string;
+      imageUrl?: string;
+    };
+  }
 
-	interface PageData {
-		meta: {
-			title: string;
-			description?: string;
-			imageUrl?: string;
-		};
-	}
-
-	interface Error {
-		message: string;
-		stack?: string;
-		code?: string | number;
-	}
+  interface Error {
+    message: string;
+    stack?: string;
+    code?: string | number;
+  }
 }
 
-// Source: https://stackoverflow.com/questions/63814432/typescript-typing-of-non-standard-window-event-in-svelte
-// To fix the <svelte:window... in components/asset-viewer/photo-viewer.svelte
-declare namespace svelteHTML {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	interface HTMLAttributes<T> {
-		'on:copyImage'?: () => void;
-		'on:zoomImage'?: () => void;
-	}
+declare module '$env/static/public' {
+  export const PUBLIC_IMMICH_PAY_HOST: string;
+  export const PUBLIC_IMMICH_BUY_HOST: string;
+}
+
+interface Element {
+  // Make optional, because it's unavailable on iPhones.
+  requestFullscreen?(options?: FullscreenOptions): Promise<void>;
+}
+
+import type en from '$i18n/en.json';
+import 'svelte-i18n';
+
+type NestedKeys<T, K = keyof T> = K extends keyof T & string
+  ? `${K}` | (T[K] extends object ? `${K}.${NestedKeys<T[K]>}` : never)
+  : never;
+
+declare module 'svelte-i18n' {
+  import type { InterpolationValues } from '$lib/components/i18n/format-message.svelte';
+  import type { Readable } from 'svelte/store';
+
+  type Translations = NestedKeys<typeof en>;
+
+  interface MessageObject {
+    id: Translations;
+    locale?: string;
+    format?: string;
+    default?: string;
+    values?: InterpolationValues;
+  }
+
+  type MessageFormatter = (id: Translations | MessageObject, options?: Omit<MessageObject, 'id'>) => string;
+
+  const format: Readable<MessageFormatter>;
+  const t: Readable<MessageFormatter>;
+  const _: Readable<MessageFormatter>;
 }

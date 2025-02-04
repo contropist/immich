@@ -1,120 +1,133 @@
 <script lang="ts">
-	import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
-	import type { MapSettings } from '$lib/stores/preferences.store';
-	import { Duration } from 'luxon';
-	import { createEventDispatcher } from 'svelte';
-	import { fly } from 'svelte/transition';
-	import SettingSelect from '../admin-page/settings/setting-select.svelte';
-	import SettingSwitch from '../admin-page/settings/setting-switch.svelte';
-	import Button from '../elements/buttons/button.svelte';
-	import LinkButton from '../elements/buttons/link-button.svelte';
+  import FullScreenModal from '$lib/components/shared-components/full-screen-modal.svelte';
+  import SettingSelect from '$lib/components/shared-components/settings/setting-select.svelte';
+  import type { MapSettings } from '$lib/stores/preferences.store';
+  import { Button, Field, Stack, Switch } from '@immich/ui';
+  import { Duration } from 'luxon';
+  import { t } from 'svelte-i18n';
+  import { fly } from 'svelte/transition';
+  import DateInput from '../elements/date-input.svelte';
 
-	export let settings: MapSettings;
-	let customDateRange = !!settings.dateAfter || !!settings.dateBefore;
+  interface Props {
+    settings: MapSettings;
+    onClose: () => void;
+    onSave: (settings: MapSettings) => void;
+  }
 
-	const dispatch = createEventDispatcher<{
-		close: void;
-		save: MapSettings;
-	}>();
+  let { settings: initialValues, onClose, onSave }: Props = $props();
+  let settings = $state(initialValues);
+
+  let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
+
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+    onSave(settings);
+  };
 </script>
 
-<FullScreenModal on:clickOutside={() => dispatch('close')}>
-	<div
-		class="flex flex-col gap-8 border bg-white dark:bg-immich-dark-gray dark:border-immich-dark-gray p-8 shadow-sm w-96 max-w-lg rounded-3xl"
-	>
-		<h1 class="text-2xl text-immich-primary dark:text-immich-dark-primary font-medium self-center">
-			Map Settings
-		</h1>
+<form {onsubmit}>
+  <FullScreenModal title={$t('map_settings')} {onClose}>
+    <Stack gap={4}>
+      <Field label={$t('allow_dark_mode')}>
+        <Switch bind:checked={settings.allowDarkMode} class="flex justify-between items-center text-sm" />
+      </Field>
+      <Field label={$t('only_favorites')}>
+        <Switch bind:checked={settings.onlyFavorites} class="flex justify-between items-center text-sm" />
+      </Field>
+      <Field label={$t('include_archived')}>
+        <Switch bind:checked={settings.includeArchived} class="flex justify-between items-center text-sm" />
+      </Field>
+      <Field label={$t('include_shared_partner_assets')}>
+        <Switch bind:checked={settings.withPartners} class="flex justify-between items-center text-sm" />
+      </Field>
+      <Field label={$t('include_shared_albums')}>
+        <Switch bind:checked={settings.withSharedAlbums} class="flex justify-between items-center text-sm" />
+      </Field>
 
-		<form
-			on:submit|preventDefault={() => dispatch('save', settings)}
-			class="flex flex-col gap-4 text-immich-primary dark:text-immich-dark-primary"
-		>
-			<SettingSwitch title="Allow dark mode" bind:checked={settings.allowDarkMode} />
-			<SettingSwitch title="Only favorites" bind:checked={settings.onlyFavorites} />
-			{#if customDateRange}
-				<div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
-					<div class="flex justify-between items-center gap-8">
-						<label class="immich-form-label text-sm shrink-0" for="date-after">Date after</label>
-						<input
-							class="immich-form-input w-40"
-							type="date"
-							id="date-after"
-							max={settings.dateBefore}
-							bind:value={settings.dateAfter}
-						/>
-					</div>
-					<div class="flex justify-between items-center gap-8">
-						<label class="immich-form-label text-sm shrink-0" for="date-before">Date before</label>
-						<input
-							class="immich-form-input w-40"
-							type="date"
-							id="date-before"
-							bind:value={settings.dateBefore}
-						/>
-					</div>
-					<div class="flex justify-center text-xs">
-						<LinkButton
-							on:click={() => {
-								customDateRange = false;
-								settings.dateAfter = '';
-								settings.dateBefore = '';
-							}}
-						>
-							Remove custom date range
-						</LinkButton>
-					</div>
-				</div>
-			{:else}
-				<div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
-					<SettingSelect
-						label="Date range"
-						name="date-range"
-						bind:value={settings.relativeDate}
-						options={[
-							{
-								value: '',
-								text: 'All'
-							},
-							{
-								value: Duration.fromObject({ hours: 24 }).toISO() || '',
-								text: 'Past 24 hours'
-							},
-							{
-								value: Duration.fromObject({ days: 7 }).toISO() || '',
-								text: 'Past 7 days'
-							},
-							{
-								value: Duration.fromObject({ days: 30 }).toISO() || '',
-								text: 'Past 30 days'
-							},
-							{
-								value: Duration.fromObject({ years: 1 }).toISO() || '',
-								text: 'Past year'
-							},
-							{
-								value: Duration.fromObject({ years: 3 }).toISO() || '',
-								text: 'Past 3 years'
-							}
-						]}
-					/>
-					<div class="text-xs">
-						<LinkButton
-							on:click={() => {
-								customDateRange = true;
-								settings.relativeDate = '';
-							}}
-						>
-							Use custom date range instead
-						</LinkButton>
-					</div>
-				</div>
-			{/if}
+      {#if customDateRange}
+        <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
+          <div class="flex items-center justify-between gap-8">
+            <label class="immich-form-label shrink-0 text-sm" for="date-after">{$t('date_after')}</label>
+            <DateInput
+              class="immich-form-input w-40"
+              type="date"
+              id="date-after"
+              max={settings.dateBefore}
+              bind:value={settings.dateAfter}
+            />
+          </div>
+          <div class="flex items-center justify-between gap-8">
+            <label class="immich-form-label shrink-0 text-sm" for="date-before">{$t('date_before')}</label>
+            <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
+          </div>
+          <div class="flex justify-center text-xs">
+            <Button
+              color="primary"
+              size="small"
+              variant="ghost"
+              onclick={() => {
+                customDateRange = false;
+                settings.dateAfter = '';
+                settings.dateBefore = '';
+              }}
+            >
+              {$t('remove_custom_date_range')}
+            </Button>
+          </div>
+        </div>
+      {:else}
+        <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
+          <SettingSelect
+            label={$t('date_range')}
+            name="date-range"
+            bind:value={settings.relativeDate}
+            options={[
+              {
+                value: '',
+                text: $t('all'),
+              },
+              {
+                value: Duration.fromObject({ hours: 24 }).toISO() || '',
+                text: $t('past_durations.hours', { values: { hours: 24 } }),
+              },
+              {
+                value: Duration.fromObject({ days: 7 }).toISO() || '',
+                text: $t('past_durations.days', { values: { days: 7 } }),
+              },
+              {
+                value: Duration.fromObject({ days: 30 }).toISO() || '',
+                text: $t('past_durations.days', { values: { days: 30 } }),
+              },
+              {
+                value: Duration.fromObject({ years: 1 }).toISO() || '',
+                text: $t('past_durations.years', { values: { years: 1 } }),
+              },
+              {
+                value: Duration.fromObject({ years: 3 }).toISO() || '',
+                text: $t('past_durations.years', { values: { years: 3 } }),
+              },
+            ]}
+          />
+          <div class="text-xs">
+            <Button
+              color="primary"
+              size="small"
+              variant="ghost"
+              onclick={() => {
+                customDateRange = true;
+                settings.relativeDate = '';
+              }}
+            >
+              {$t('use_custom_date_range')}
+            </Button>
+          </div>
+        </div>
+      {/if}
+    </Stack>
 
-			<div class="flex w-full gap-4 mt-4">
-				<Button color="gray" size="sm" fullwidth on:click={() => dispatch('close')}>Cancel</Button>
-				<Button type="submit" size="sm" fullwidth>Save</Button>
-			</div>
-		</form>
-	</div>
-</FullScreenModal>
+    {#snippet stickyBottom()}
+      <Button color="secondary" shape="round" fullWidth onclick={onClose}>{$t('cancel')}</Button>
+      <Button type="submit" shape="round" fullWidth>{$t('save')}</Button>
+    {/snippet}
+  </FullScreenModal>
+</form>

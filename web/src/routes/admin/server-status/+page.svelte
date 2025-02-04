@@ -1,22 +1,35 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { api } from '@api';
-	import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
-	import type { PageData } from './$types';
+  import ServerStatsPanel from '$lib/components/admin-page/server-stats/server-stats-panel.svelte';
+  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
+  import { getServerStatistics } from '@immich/sdk';
+  import { onDestroy, onMount } from 'svelte';
+  import type { PageData } from './$types';
+  import { asyncTimeout } from '$lib/utils';
 
-	export let data: PageData;
-	let setIntervalHandler: NodeJS.Timer;
+  interface Props {
+    data: PageData;
+  }
 
-	onMount(async () => {
-		setIntervalHandler = setInterval(async () => {
-			const { data: stats } = await api.serverInfoApi.getStats();
-			data.stats = stats;
-		}, 5000);
-	});
+  let { data = $bindable() }: Props = $props();
 
-	onDestroy(() => {
-		clearInterval(setIntervalHandler);
-	});
+  let running = true;
+
+  onMount(async () => {
+    while (running) {
+      data.stats = await getServerStatistics();
+      await asyncTimeout(5000);
+    }
+  });
+
+  onDestroy(() => {
+    running = false;
+  });
 </script>
 
-<ServerStatsPanel stats={data.stats} />
+<UserPageLayout title={data.meta.title} admin>
+  <section id="setting-content" class="flex place-content-center sm:mx-4">
+    <section class="w-full pb-28 sm:w-5/6 md:w-[850px]">
+      <ServerStatsPanel stats={data.stats} />
+    </section>
+  </section>
+</UserPageLayout>

@@ -1,14 +1,56 @@
-import { IAccessRepository } from '@app/domain';
+import { IAccessRepository } from 'src/types';
+import { Mocked, vitest } from 'vitest';
 
-export const newAccessRepositoryMock = (): jest.Mocked<IAccessRepository> => {
+export type IAccessRepositoryMock = { [K in keyof IAccessRepository]: Mocked<IAccessRepository[K]> };
+
+export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
   return {
-    hasPartnerAccess: jest.fn(),
+    activity: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkAlbumOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkCreateAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
 
-    hasAlbumAssetAccess: jest.fn(),
-    hasOwnerAssetAccess: jest.fn(),
-    hasPartnerAssetAccess: jest.fn(),
-    hasSharedLinkAssetAccess: jest.fn(),
+    asset: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkAlbumAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkPartnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
 
-    hasAlbumOwnerAccess: jest.fn(),
+    album: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkSharedAlbumAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkSharedLinkAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    authDevice: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    memory: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    person: {
+      checkFaceOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    partner: {
+      checkUpdateAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    stack: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    timeline: {
+      checkPartnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
+    tag: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
   };
 };

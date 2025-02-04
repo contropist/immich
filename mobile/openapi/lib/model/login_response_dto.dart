@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -14,67 +14,61 @@ class LoginResponseDto {
   /// Returns a new [LoginResponseDto] instance.
   LoginResponseDto({
     required this.accessToken,
-    required this.userId,
-    required this.userEmail,
-    required this.firstName,
-    required this.lastName,
-    required this.profileImagePath,
     required this.isAdmin,
+    required this.name,
+    required this.profileImagePath,
     required this.shouldChangePassword,
+    required this.userEmail,
+    required this.userId,
   });
 
   String accessToken;
 
-  String userId;
+  bool isAdmin;
 
-  String userEmail;
-
-  String firstName;
-
-  String lastName;
+  String name;
 
   String profileImagePath;
 
-  bool isAdmin;
-
   bool shouldChangePassword;
+
+  String userEmail;
+
+  String userId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponseDto &&
-     other.accessToken == accessToken &&
-     other.userId == userId &&
-     other.userEmail == userEmail &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.profileImagePath == profileImagePath &&
-     other.isAdmin == isAdmin &&
-     other.shouldChangePassword == shouldChangePassword;
+    other.accessToken == accessToken &&
+    other.isAdmin == isAdmin &&
+    other.name == name &&
+    other.profileImagePath == profileImagePath &&
+    other.shouldChangePassword == shouldChangePassword &&
+    other.userEmail == userEmail &&
+    other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (accessToken.hashCode) +
-    (userId.hashCode) +
-    (userEmail.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode) +
-    (profileImagePath.hashCode) +
     (isAdmin.hashCode) +
-    (shouldChangePassword.hashCode);
+    (name.hashCode) +
+    (profileImagePath.hashCode) +
+    (shouldChangePassword.hashCode) +
+    (userEmail.hashCode) +
+    (userId.hashCode);
 
   @override
-  String toString() => 'LoginResponseDto[accessToken=$accessToken, userId=$userId, userEmail=$userEmail, firstName=$firstName, lastName=$lastName, profileImagePath=$profileImagePath, isAdmin=$isAdmin, shouldChangePassword=$shouldChangePassword]';
+  String toString() => 'LoginResponseDto[accessToken=$accessToken, isAdmin=$isAdmin, name=$name, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, userEmail=$userEmail, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'accessToken'] = this.accessToken;
-      json[r'userId'] = this.userId;
-      json[r'userEmail'] = this.userEmail;
-      json[r'firstName'] = this.firstName;
-      json[r'lastName'] = this.lastName;
-      json[r'profileImagePath'] = this.profileImagePath;
       json[r'isAdmin'] = this.isAdmin;
+      json[r'name'] = this.name;
+      json[r'profileImagePath'] = this.profileImagePath;
       json[r'shouldChangePassword'] = this.shouldChangePassword;
+      json[r'userEmail'] = this.userEmail;
+      json[r'userId'] = this.userId;
     return json;
   }
 
@@ -82,18 +76,18 @@ class LoginResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static LoginResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "LoginResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return LoginResponseDto(
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
-        userId: mapValueOfType<String>(json, r'userId')!,
-        userEmail: mapValueOfType<String>(json, r'userEmail')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
+        name: mapValueOfType<String>(json, r'name')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
+        userEmail: mapValueOfType<String>(json, r'userEmail')!,
+        userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
     return null;
@@ -142,13 +136,12 @@ class LoginResponseDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'accessToken',
-    'userId',
-    'userEmail',
-    'firstName',
-    'lastName',
-    'profileImagePath',
     'isAdmin',
+    'name',
+    'profileImagePath',
     'shouldChangePassword',
+    'userEmail',
+    'userId',
   };
 }
 

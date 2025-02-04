@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,110 +13,56 @@ part of openapi.api;
 class UserResponseDto {
   /// Returns a new [UserResponseDto] instance.
   UserResponseDto({
-    required this.id,
+    required this.avatarColor,
     required this.email,
-    required this.firstName,
-    required this.lastName,
-    required this.storageLabel,
-    required this.externalPath,
+    required this.id,
+    required this.name,
+    required this.profileChangedAt,
     required this.profileImagePath,
-    required this.shouldChangePassword,
-    required this.isAdmin,
-    required this.createdAt,
-    required this.deletedAt,
-    required this.updatedAt,
-    required this.oauthId,
   });
 
-  String id;
+  UserAvatarColor avatarColor;
 
   String email;
 
-  String firstName;
+  String id;
 
-  String lastName;
+  String name;
 
-  String? storageLabel;
-
-  String? externalPath;
+  DateTime profileChangedAt;
 
   String profileImagePath;
 
-  bool shouldChangePassword;
-
-  bool isAdmin;
-
-  DateTime createdAt;
-
-  DateTime? deletedAt;
-
-  DateTime updatedAt;
-
-  String oauthId;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
-     other.id == id &&
-     other.email == email &&
-     other.firstName == firstName &&
-     other.lastName == lastName &&
-     other.storageLabel == storageLabel &&
-     other.externalPath == externalPath &&
-     other.profileImagePath == profileImagePath &&
-     other.shouldChangePassword == shouldChangePassword &&
-     other.isAdmin == isAdmin &&
-     other.createdAt == createdAt &&
-     other.deletedAt == deletedAt &&
-     other.updatedAt == updatedAt &&
-     other.oauthId == oauthId;
+    other.avatarColor == avatarColor &&
+    other.email == email &&
+    other.id == id &&
+    other.name == name &&
+    other.profileChangedAt == profileChangedAt &&
+    other.profileImagePath == profileImagePath;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
+    (avatarColor.hashCode) +
     (email.hashCode) +
-    (firstName.hashCode) +
-    (lastName.hashCode) +
-    (storageLabel == null ? 0 : storageLabel!.hashCode) +
-    (externalPath == null ? 0 : externalPath!.hashCode) +
-    (profileImagePath.hashCode) +
-    (shouldChangePassword.hashCode) +
-    (isAdmin.hashCode) +
-    (createdAt.hashCode) +
-    (deletedAt == null ? 0 : deletedAt!.hashCode) +
-    (updatedAt.hashCode) +
-    (oauthId.hashCode);
+    (id.hashCode) +
+    (name.hashCode) +
+    (profileChangedAt.hashCode) +
+    (profileImagePath.hashCode);
 
   @override
-  String toString() => 'UserResponseDto[id=$id, email=$email, firstName=$firstName, lastName=$lastName, storageLabel=$storageLabel, externalPath=$externalPath, profileImagePath=$profileImagePath, shouldChangePassword=$shouldChangePassword, isAdmin=$isAdmin, createdAt=$createdAt, deletedAt=$deletedAt, updatedAt=$updatedAt, oauthId=$oauthId]';
+  String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
+      json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
-      json[r'firstName'] = this.firstName;
-      json[r'lastName'] = this.lastName;
-    if (this.storageLabel != null) {
-      json[r'storageLabel'] = this.storageLabel;
-    } else {
-    //  json[r'storageLabel'] = null;
-    }
-    if (this.externalPath != null) {
-      json[r'externalPath'] = this.externalPath;
-    } else {
-    //  json[r'externalPath'] = null;
-    }
+      json[r'id'] = this.id;
+      json[r'name'] = this.name;
+      json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
       json[r'profileImagePath'] = this.profileImagePath;
-      json[r'shouldChangePassword'] = this.shouldChangePassword;
-      json[r'isAdmin'] = this.isAdmin;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.deletedAt != null) {
-      json[r'deletedAt'] = this.deletedAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'deletedAt'] = null;
-    }
-      json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
-      json[r'oauthId'] = this.oauthId;
     return json;
   }
 
@@ -124,23 +70,17 @@ class UserResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static UserResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "UserResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return UserResponseDto(
-        id: mapValueOfType<String>(json, r'id')!,
+        avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
-        firstName: mapValueOfType<String>(json, r'firstName')!,
-        lastName: mapValueOfType<String>(json, r'lastName')!,
-        storageLabel: mapValueOfType<String>(json, r'storageLabel'),
-        externalPath: mapValueOfType<String>(json, r'externalPath'),
+        id: mapValueOfType<String>(json, r'id')!,
+        name: mapValueOfType<String>(json, r'name')!,
+        profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
-        shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
-        isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        deletedAt: mapDateTime(json, r'deletedAt', ''),
-        updatedAt: mapDateTime(json, r'updatedAt', '')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
       );
     }
     return null;
@@ -188,19 +128,12 @@ class UserResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
+    'avatarColor',
     'email',
-    'firstName',
-    'lastName',
-    'storageLabel',
-    'externalPath',
+    'id',
+    'name',
+    'profileChangedAt',
     'profileImagePath',
-    'shouldChangePassword',
-    'isAdmin',
-    'createdAt',
-    'deletedAt',
-    'updatedAt',
-    'oauthId',
   };
 }
 

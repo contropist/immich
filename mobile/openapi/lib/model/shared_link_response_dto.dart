@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,35 +13,21 @@ part of openapi.api;
 class SharedLinkResponseDto {
   /// Returns a new [SharedLinkResponseDto] instance.
   SharedLinkResponseDto({
-    required this.type,
-    required this.id,
-    required this.description,
-    required this.userId,
-    required this.key,
-    required this.createdAt,
-    required this.expiresAt,
-    this.assets = const [],
     this.album,
-    required this.allowUpload,
     required this.allowDownload,
-    required this.showExif,
+    required this.allowUpload,
+    this.assets = const [],
+    required this.createdAt,
+    required this.description,
+    required this.expiresAt,
+    required this.id,
+    required this.key,
+    required this.password,
+    required this.showMetadata,
+    this.token,
+    required this.type,
+    required this.userId,
   });
-
-  SharedLinkType type;
-
-  String id;
-
-  String? description;
-
-  String userId;
-
-  String key;
-
-  DateTime createdAt;
-
-  DateTime? expiresAt;
-
-  List<AssetResponseDto> assets;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -51,72 +37,106 @@ class SharedLinkResponseDto {
   ///
   AlbumResponseDto? album;
 
-  bool allowUpload;
-
   bool allowDownload;
 
-  bool showExif;
+  bool allowUpload;
+
+  List<AssetResponseDto> assets;
+
+  DateTime createdAt;
+
+  String? description;
+
+  DateTime? expiresAt;
+
+  String id;
+
+  String key;
+
+  String? password;
+
+  bool showMetadata;
+
+  String? token;
+
+  SharedLinkType type;
+
+  String userId;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkResponseDto &&
-     other.type == type &&
-     other.id == id &&
-     other.description == description &&
-     other.userId == userId &&
-     other.key == key &&
-     other.createdAt == createdAt &&
-     other.expiresAt == expiresAt &&
-     other.assets == assets &&
-     other.album == album &&
-     other.allowUpload == allowUpload &&
-     other.allowDownload == allowDownload &&
-     other.showExif == showExif;
+    other.album == album &&
+    other.allowDownload == allowDownload &&
+    other.allowUpload == allowUpload &&
+    _deepEquality.equals(other.assets, assets) &&
+    other.createdAt == createdAt &&
+    other.description == description &&
+    other.expiresAt == expiresAt &&
+    other.id == id &&
+    other.key == key &&
+    other.password == password &&
+    other.showMetadata == showMetadata &&
+    other.token == token &&
+    other.type == type &&
+    other.userId == userId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (type.hashCode) +
-    (id.hashCode) +
-    (description == null ? 0 : description!.hashCode) +
-    (userId.hashCode) +
-    (key.hashCode) +
-    (createdAt.hashCode) +
-    (expiresAt == null ? 0 : expiresAt!.hashCode) +
-    (assets.hashCode) +
     (album == null ? 0 : album!.hashCode) +
-    (allowUpload.hashCode) +
     (allowDownload.hashCode) +
-    (showExif.hashCode);
+    (allowUpload.hashCode) +
+    (assets.hashCode) +
+    (createdAt.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
+    (expiresAt == null ? 0 : expiresAt!.hashCode) +
+    (id.hashCode) +
+    (key.hashCode) +
+    (password == null ? 0 : password!.hashCode) +
+    (showMetadata.hashCode) +
+    (token == null ? 0 : token!.hashCode) +
+    (type.hashCode) +
+    (userId.hashCode);
 
   @override
-  String toString() => 'SharedLinkResponseDto[type=$type, id=$id, description=$description, userId=$userId, key=$key, createdAt=$createdAt, expiresAt=$expiresAt, assets=$assets, album=$album, allowUpload=$allowUpload, allowDownload=$allowDownload, showExif=$showExif]';
+  String toString() => 'SharedLinkResponseDto[album=$album, allowDownload=$allowDownload, allowUpload=$allowUpload, assets=$assets, createdAt=$createdAt, description=$description, expiresAt=$expiresAt, id=$id, key=$key, password=$password, showMetadata=$showMetadata, token=$token, type=$type, userId=$userId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'type'] = this.type;
-      json[r'id'] = this.id;
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
-    }
-      json[r'userId'] = this.userId;
-      json[r'key'] = this.key;
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
-    }
-      json[r'assets'] = this.assets;
     if (this.album != null) {
       json[r'album'] = this.album;
     } else {
     //  json[r'album'] = null;
     }
-      json[r'allowUpload'] = this.allowUpload;
       json[r'allowDownload'] = this.allowDownload;
-      json[r'showExif'] = this.showExif;
+      json[r'allowUpload'] = this.allowUpload;
+      json[r'assets'] = this.assets;
+      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    if (this.description != null) {
+      json[r'description'] = this.description;
+    } else {
+    //  json[r'description'] = null;
+    }
+    if (this.expiresAt != null) {
+      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
+    } else {
+    //  json[r'expiresAt'] = null;
+    }
+      json[r'id'] = this.id;
+      json[r'key'] = this.key;
+    if (this.password != null) {
+      json[r'password'] = this.password;
+    } else {
+    //  json[r'password'] = null;
+    }
+      json[r'showMetadata'] = this.showMetadata;
+    if (this.token != null) {
+      json[r'token'] = this.token;
+    } else {
+    //  json[r'token'] = null;
+    }
+      json[r'type'] = this.type;
+      json[r'userId'] = this.userId;
     return json;
   }
 
@@ -124,22 +144,25 @@ class SharedLinkResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static SharedLinkResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "SharedLinkResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return SharedLinkResponseDto(
-        type: SharedLinkType.fromJson(json[r'type'])!,
-        id: mapValueOfType<String>(json, r'id')!,
-        description: mapValueOfType<String>(json, r'description'),
-        userId: mapValueOfType<String>(json, r'userId')!,
-        key: mapValueOfType<String>(json, r'key')!,
-        createdAt: mapDateTime(json, r'createdAt', '')!,
-        expiresAt: mapDateTime(json, r'expiresAt', ''),
-        assets: AssetResponseDto.listFromJson(json[r'assets']),
         album: AlbumResponseDto.fromJson(json[r'album']),
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
         allowDownload: mapValueOfType<bool>(json, r'allowDownload')!,
-        showExif: mapValueOfType<bool>(json, r'showExif')!,
+        allowUpload: mapValueOfType<bool>(json, r'allowUpload')!,
+        assets: AssetResponseDto.listFromJson(json[r'assets']),
+        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        description: mapValueOfType<String>(json, r'description'),
+        expiresAt: mapDateTime(json, r'expiresAt', r''),
+        id: mapValueOfType<String>(json, r'id')!,
+        key: mapValueOfType<String>(json, r'key')!,
+        password: mapValueOfType<String>(json, r'password'),
+        showMetadata: mapValueOfType<bool>(json, r'showMetadata')!,
+        token: mapValueOfType<String>(json, r'token'),
+        type: SharedLinkType.fromJson(json[r'type'])!,
+        userId: mapValueOfType<String>(json, r'userId')!,
       );
     }
     return null;
@@ -187,17 +210,18 @@ class SharedLinkResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'type',
-    'id',
-    'description',
-    'userId',
-    'key',
-    'createdAt',
-    'expiresAt',
-    'assets',
-    'allowUpload',
     'allowDownload',
-    'showExif',
+    'allowUpload',
+    'assets',
+    'createdAt',
+    'description',
+    'expiresAt',
+    'id',
+    'key',
+    'password',
+    'showMetadata',
+    'type',
+    'userId',
   };
 }
 

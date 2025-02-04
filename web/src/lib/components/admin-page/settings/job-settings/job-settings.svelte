@@ -1,103 +1,84 @@
 <script lang="ts">
-	import {
-		notificationController,
-		NotificationType
-	} from '$lib/components/shared-components/notification/notification';
-	import { api, JobName, SystemConfigJobDto } from '@api';
-	import { isEqual } from 'lodash-es';
-	import { fade } from 'svelte/transition';
-	import { handleError } from '../../../../utils/handle-error';
-	import SettingButtonsRow from '../setting-buttons-row.svelte';
-	import SettingInputField, { SettingInputFieldType } from '../setting-input-field.svelte';
+  import { getJobName } from '$lib/utils';
+  import { JobName, type SystemConfigDto, type SystemConfigJobDto } from '@immich/sdk';
+  import { isEqual } from 'lodash-es';
+  import { fade } from 'svelte/transition';
+  import type { SettingsResetEvent, SettingsSaveEvent } from '../admin-settings';
+  import SettingButtonsRow from '$lib/components/shared-components/settings/setting-buttons-row.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import { t } from 'svelte-i18n';
+  import { SettingInputFieldType } from '$lib/constants';
 
-	export let jobConfig: SystemConfigJobDto; // this is the config that is being edited
+  interface Props {
+    savedConfig: SystemConfigDto;
+    defaultConfig: SystemConfigDto;
+    config: SystemConfigDto;
+    disabled?: boolean;
+    onReset: SettingsResetEvent;
+    onSave: SettingsSaveEvent;
+  }
 
-	let savedConfig: SystemConfigJobDto;
-	let defaultConfig: SystemConfigJobDto;
+  let { savedConfig, defaultConfig, config = $bindable(), disabled = false, onReset, onSave }: Props = $props();
 
-	const ignoredJobs = [JobName.BackgroundTask, JobName.Search] as JobName[];
-	const jobNames = Object.values(JobName).filter(
-		(jobName) => !ignoredJobs.includes(jobName as JobName)
-	);
+  const jobNames = [
+    JobName.ThumbnailGeneration,
+    JobName.MetadataExtraction,
+    JobName.Library,
+    JobName.Sidecar,
+    JobName.SmartSearch,
+    JobName.FaceDetection,
+    JobName.FacialRecognition,
+    JobName.VideoConversion,
+    JobName.StorageTemplateMigration,
+    JobName.Migration,
+  ];
 
-	async function getConfigs() {
-		[savedConfig, defaultConfig] = await Promise.all([
-			api.systemConfigApi.getConfig().then((res) => res.data.job),
-			api.systemConfigApi.getDefaults().then((res) => res.data.job)
-		]);
-	}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function isSystemConfigJobDto(jobName: any): jobName is keyof SystemConfigJobDto {
+    return jobName in config.job;
+  }
 
-	async function saveSetting() {
-		try {
-			const { data: configs } = await api.systemConfigApi.getConfig();
-
-			const result = await api.systemConfigApi.updateConfig({
-				systemConfigDto: {
-					...configs,
-					job: jobConfig
-				}
-			});
-
-			jobConfig = { ...result.data.job };
-			savedConfig = { ...result.data.job };
-
-			notificationController.show({ message: 'Job settings saved', type: NotificationType.Info });
-		} catch (error) {
-			handleError(error, 'Unable to save settings');
-		}
-	}
-
-	async function reset() {
-		const { data: resetConfig } = await api.systemConfigApi.getConfig();
-
-		jobConfig = { ...resetConfig.job };
-		savedConfig = { ...resetConfig.job };
-
-		notificationController.show({
-			message: 'Reset Job settings to the recent saved settings',
-			type: NotificationType.Info
-		});
-	}
-
-	async function resetToDefault() {
-		const { data: configs } = await api.systemConfigApi.getDefaults();
-
-		jobConfig = { ...configs.job };
-		defaultConfig = { ...configs.job };
-
-		notificationController.show({
-			message: 'Reset Job settings to default',
-			type: NotificationType.Info
-		});
-	}
+  const onsubmit = (event: Event) => {
+    event.preventDefault();
+  };
 </script>
 
 <div>
-	{#await getConfigs() then}
-		<div in:fade={{ duration: 500 }}>
-			<form autocomplete="off" on:submit|preventDefault>
-				{#each jobNames as jobName}
-					<div class="flex flex-col gap-4 ml-4 mt-4">
-						<SettingInputField
-							inputType={SettingInputFieldType.NUMBER}
-							label="{api.getJobName(jobName)} Concurrency"
-							desc=""
-							bind:value={jobConfig[jobName].concurrency}
-							required={true}
-							isEdited={!(jobConfig[jobName].concurrency == savedConfig[jobName].concurrency)}
-						/>
-					</div>
-				{/each}
+  <div in:fade={{ duration: 500 }}>
+    <form autocomplete="off" {onsubmit}>
+      {#each jobNames as jobName}
+        <div class="ml-4 mt-4 flex flex-col gap-4">
+          {#if isSystemConfigJobDto(jobName)}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              {disabled}
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
+              description=""
+              bind:value={config.job[jobName].concurrency}
+              required={true}
+              isEdited={!(config.job[jobName].concurrency == savedConfig.job[jobName].concurrency)}
+            />
+          {:else}
+            <SettingInputField
+              inputType={SettingInputFieldType.NUMBER}
+              label={$t('admin.job_concurrency', { values: { job: $getJobName(jobName) } })}
+              description=""
+              value="1"
+              disabled={true}
+              title={$t('admin.job_not_concurrency_safe')}
+            />
+          {/if}
+        </div>
+      {/each}
 
-				<div class="ml-4">
-					<SettingButtonsRow
-						on:reset={reset}
-						on:save={saveSetting}
-						on:reset-to-default={resetToDefault}
-						showResetToDefault={!isEqual(savedConfig, defaultConfig)}
-					/>
-				</div>
-			</form>
-		</div>
-	{/await}
+      <div class="ml-4">
+        <SettingButtonsRow
+          onReset={(options) => onReset({ ...options, configKeys: ['job'] })}
+          onSave={() => onSave({ job: config.job })}
+          showResetToDefault={!isEqual(savedConfig.job, defaultConfig.job)}
+          {disabled}
+        />
+      </div>
+    </form>
+  </div>
 </div>

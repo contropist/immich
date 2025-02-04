@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -13,80 +13,110 @@ part of openapi.api;
 class AllJobStatusResponseDto {
   /// Returns a new [AllJobStatusResponseDto] instance.
   AllJobStatusResponseDto({
-    required this.thumbnailGeneration,
-    required this.metadataExtraction,
-    required this.videoConversion,
-    required this.objectTagging,
-    required this.clipEncoding,
-    required this.storageTemplateMigration,
     required this.backgroundTask,
+    required this.backupDatabase,
+    required this.duplicateDetection,
+    required this.faceDetection,
+    required this.facialRecognition,
+    required this.library_,
+    required this.metadataExtraction,
+    required this.migration,
+    required this.notifications,
     required this.search,
-    required this.recognizeFaces,
     required this.sidecar,
+    required this.smartSearch,
+    required this.storageTemplateMigration,
+    required this.thumbnailGeneration,
+    required this.videoConversion,
   });
-
-  JobStatusDto thumbnailGeneration;
-
-  JobStatusDto metadataExtraction;
-
-  JobStatusDto videoConversion;
-
-  JobStatusDto objectTagging;
-
-  JobStatusDto clipEncoding;
-
-  JobStatusDto storageTemplateMigration;
 
   JobStatusDto backgroundTask;
 
-  JobStatusDto search;
+  JobStatusDto backupDatabase;
 
-  JobStatusDto recognizeFaces;
+  JobStatusDto duplicateDetection;
+
+  JobStatusDto faceDetection;
+
+  JobStatusDto facialRecognition;
+
+  JobStatusDto library_;
+
+  JobStatusDto metadataExtraction;
+
+  JobStatusDto migration;
+
+  JobStatusDto notifications;
+
+  JobStatusDto search;
 
   JobStatusDto sidecar;
 
+  JobStatusDto smartSearch;
+
+  JobStatusDto storageTemplateMigration;
+
+  JobStatusDto thumbnailGeneration;
+
+  JobStatusDto videoConversion;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is AllJobStatusResponseDto &&
-     other.thumbnailGeneration == thumbnailGeneration &&
-     other.metadataExtraction == metadataExtraction &&
-     other.videoConversion == videoConversion &&
-     other.objectTagging == objectTagging &&
-     other.clipEncoding == clipEncoding &&
-     other.storageTemplateMigration == storageTemplateMigration &&
-     other.backgroundTask == backgroundTask &&
-     other.search == search &&
-     other.recognizeFaces == recognizeFaces &&
-     other.sidecar == sidecar;
+    other.backgroundTask == backgroundTask &&
+    other.backupDatabase == backupDatabase &&
+    other.duplicateDetection == duplicateDetection &&
+    other.faceDetection == faceDetection &&
+    other.facialRecognition == facialRecognition &&
+    other.library_ == library_ &&
+    other.metadataExtraction == metadataExtraction &&
+    other.migration == migration &&
+    other.notifications == notifications &&
+    other.search == search &&
+    other.sidecar == sidecar &&
+    other.smartSearch == smartSearch &&
+    other.storageTemplateMigration == storageTemplateMigration &&
+    other.thumbnailGeneration == thumbnailGeneration &&
+    other.videoConversion == videoConversion;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (thumbnailGeneration.hashCode) +
-    (metadataExtraction.hashCode) +
-    (videoConversion.hashCode) +
-    (objectTagging.hashCode) +
-    (clipEncoding.hashCode) +
-    (storageTemplateMigration.hashCode) +
     (backgroundTask.hashCode) +
+    (backupDatabase.hashCode) +
+    (duplicateDetection.hashCode) +
+    (faceDetection.hashCode) +
+    (facialRecognition.hashCode) +
+    (library_.hashCode) +
+    (metadataExtraction.hashCode) +
+    (migration.hashCode) +
+    (notifications.hashCode) +
     (search.hashCode) +
-    (recognizeFaces.hashCode) +
-    (sidecar.hashCode);
+    (sidecar.hashCode) +
+    (smartSearch.hashCode) +
+    (storageTemplateMigration.hashCode) +
+    (thumbnailGeneration.hashCode) +
+    (videoConversion.hashCode);
 
   @override
-  String toString() => 'AllJobStatusResponseDto[thumbnailGeneration=$thumbnailGeneration, metadataExtraction=$metadataExtraction, videoConversion=$videoConversion, objectTagging=$objectTagging, clipEncoding=$clipEncoding, storageTemplateMigration=$storageTemplateMigration, backgroundTask=$backgroundTask, search=$search, recognizeFaces=$recognizeFaces, sidecar=$sidecar]';
+  String toString() => 'AllJobStatusResponseDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
-      json[r'metadataExtraction'] = this.metadataExtraction;
-      json[r'videoConversion'] = this.videoConversion;
-      json[r'objectTagging'] = this.objectTagging;
-      json[r'clipEncoding'] = this.clipEncoding;
-      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
       json[r'backgroundTask'] = this.backgroundTask;
+      json[r'backupDatabase'] = this.backupDatabase;
+      json[r'duplicateDetection'] = this.duplicateDetection;
+      json[r'faceDetection'] = this.faceDetection;
+      json[r'facialRecognition'] = this.facialRecognition;
+      json[r'library'] = this.library_;
+      json[r'metadataExtraction'] = this.metadataExtraction;
+      json[r'migration'] = this.migration;
+      json[r'notifications'] = this.notifications;
       json[r'search'] = this.search;
-      json[r'recognizeFaces'] = this.recognizeFaces;
       json[r'sidecar'] = this.sidecar;
+      json[r'smartSearch'] = this.smartSearch;
+      json[r'storageTemplateMigration'] = this.storageTemplateMigration;
+      json[r'thumbnailGeneration'] = this.thumbnailGeneration;
+      json[r'videoConversion'] = this.videoConversion;
     return json;
   }
 
@@ -94,20 +124,26 @@ class AllJobStatusResponseDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static AllJobStatusResponseDto? fromJson(dynamic value) {
+    upgradeDto(value, "AllJobStatusResponseDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
       return AllJobStatusResponseDto(
-        thumbnailGeneration: JobStatusDto.fromJson(json[r'thumbnailGeneration'])!,
-        metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
-        videoConversion: JobStatusDto.fromJson(json[r'videoConversion'])!,
-        objectTagging: JobStatusDto.fromJson(json[r'objectTagging'])!,
-        clipEncoding: JobStatusDto.fromJson(json[r'clipEncoding'])!,
-        storageTemplateMigration: JobStatusDto.fromJson(json[r'storageTemplateMigration'])!,
         backgroundTask: JobStatusDto.fromJson(json[r'backgroundTask'])!,
+        backupDatabase: JobStatusDto.fromJson(json[r'backupDatabase'])!,
+        duplicateDetection: JobStatusDto.fromJson(json[r'duplicateDetection'])!,
+        faceDetection: JobStatusDto.fromJson(json[r'faceDetection'])!,
+        facialRecognition: JobStatusDto.fromJson(json[r'facialRecognition'])!,
+        library_: JobStatusDto.fromJson(json[r'library'])!,
+        metadataExtraction: JobStatusDto.fromJson(json[r'metadataExtraction'])!,
+        migration: JobStatusDto.fromJson(json[r'migration'])!,
+        notifications: JobStatusDto.fromJson(json[r'notifications'])!,
         search: JobStatusDto.fromJson(json[r'search'])!,
-        recognizeFaces: JobStatusDto.fromJson(json[r'recognizeFaces'])!,
         sidecar: JobStatusDto.fromJson(json[r'sidecar'])!,
+        smartSearch: JobStatusDto.fromJson(json[r'smartSearch'])!,
+        storageTemplateMigration: JobStatusDto.fromJson(json[r'storageTemplateMigration'])!,
+        thumbnailGeneration: JobStatusDto.fromJson(json[r'thumbnailGeneration'])!,
+        videoConversion: JobStatusDto.fromJson(json[r'videoConversion'])!,
       );
     }
     return null;
@@ -155,16 +191,21 @@ class AllJobStatusResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'thumbnailGeneration',
-    'metadataExtraction',
-    'videoConversion',
-    'objectTagging',
-    'clipEncoding',
-    'storageTemplateMigration',
     'backgroundTask',
+    'backupDatabase',
+    'duplicateDetection',
+    'faceDetection',
+    'facialRecognition',
+    'library',
+    'metadataExtraction',
+    'migration',
+    'notifications',
     'search',
-    'recognizeFaces',
     'sidecar',
+    'smartSearch',
+    'storageTemplateMigration',
+    'thumbnailGeneration',
+    'videoConversion',
   };
 }
 

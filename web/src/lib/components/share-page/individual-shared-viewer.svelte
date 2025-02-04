@@ -1,107 +1,118 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { bulkDownload } from '$lib/utils/asset-utils';
-	import { openFileUploadDialog } from '$lib/utils/file-uploader';
-	import { api, AssetResponseDto, SharedLinkResponseDto } from '@api';
-	import ArrowLeft from 'svelte-material-icons/ArrowLeft.svelte';
-	import FileImagePlusOutline from 'svelte-material-icons/FileImagePlusOutline.svelte';
-	import FolderDownloadOutline from 'svelte-material-icons/FolderDownloadOutline.svelte';
-	import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
-	import DownloadAction from '../photos-page/actions/download-action.svelte';
-	import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
-	import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
-	import ControlAppBar from '../shared-components/control-app-bar.svelte';
-	import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
-	import ImmichLogo from '../shared-components/immich-logo.svelte';
-	import {
-		notificationController,
-		NotificationType
-	} from '../shared-components/notification/notification';
-	import { handleError } from '../../utils/handle-error';
+  import { goto } from '$app/navigation';
+  import { AppRoute } from '$lib/constants';
+  import { dragAndDropFilesStore } from '$lib/stores/drag-and-drop-files.store';
+  import { getKey, handlePromiseError } from '$lib/utils';
+  import { downloadArchive } from '$lib/utils/asset-utils';
+  import { fileUploadHandler, openFileUploadDialog } from '$lib/utils/file-uploader';
+  import { handleError } from '$lib/utils/handle-error';
+  import { addSharedLinkAssets, type SharedLinkResponseDto } from '@immich/sdk';
+  import { mdiArrowLeft, mdiFileImagePlusOutline, mdiFolderDownloadOutline, mdiSelectAll } from '@mdi/js';
+  import CircleIconButton from '../elements/buttons/circle-icon-button.svelte';
+  import DownloadAction from '../photos-page/actions/download-action.svelte';
+  import RemoveFromSharedLink from '../photos-page/actions/remove-from-shared-link.svelte';
+  import AssetSelectControlBar from '../photos-page/asset-select-control-bar.svelte';
+  import ControlAppBar from '../shared-components/control-app-bar.svelte';
+  import GalleryViewer from '../shared-components/gallery-viewer/gallery-viewer.svelte';
+  import { cancelMultiselect } from '$lib/utils/asset-utils';
+  import ImmichLogoSmallLink from '$lib/components/shared-components/immich-logo-small-link.svelte';
+  import { NotificationType, notificationController } from '../shared-components/notification/notification';
+  import type { Viewport } from '$lib/stores/assets.store';
+  import { t } from 'svelte-i18n';
+  import { AssetInteraction } from '$lib/stores/asset-interaction.svelte';
 
-	export let sharedLink: SharedLinkResponseDto;
-	export let isOwned: boolean;
+  interface Props {
+    sharedLink: SharedLinkResponseDto;
+    isOwned: boolean;
+  }
 
-	let selectedAssets: Set<AssetResponseDto> = new Set();
+  let { sharedLink = $bindable(), isOwned }: Props = $props();
 
-	$: assets = sharedLink.assets;
-	$: isMultiSelectionMode = selectedAssets.size > 0;
+  const viewport: Viewport = $state({ width: 0, height: 0 });
+  const assetInteraction = new AssetInteraction();
+  let innerWidth: number = $state(0);
 
-	const downloadAssets = async () => {
-		await bulkDownload('immich-shared', assets, undefined, sharedLink.key);
-	};
+  let assets = $derived(sharedLink.assets);
 
-	const handleUploadAssets = async () => {
-		try {
-			const results = await openFileUploadDialog(undefined, sharedLink.key);
+  dragAndDropFilesStore.subscribe((value) => {
+    if (value.isDragging && value.files.length > 0) {
+      handlePromiseError(handleUploadAssets(value.files));
+      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+    }
+  });
 
-			const { data } = await api.sharedLinkApi.addSharedLinkAssets({
-				id: sharedLink.id,
-				assetIdsDto: {
-					assetIds: results.filter((id) => !!id) as string[]
-				},
-				key: sharedLink.key
-			});
+  const downloadAssets = async () => {
+    await downloadArchive(`immich-shared.zip`, { assetIds: assets.map((asset) => asset.id) });
+  };
 
-			const added = data.filter((item) => item.success).length;
+  const handleUploadAssets = async (files: File[] = []) => {
+    try {
+      let results: (string | undefined)[] = [];
+      results = await (!files || files.length === 0 || !Array.isArray(files)
+        ? openFileUploadDialog()
+        : fileUploadHandler(files));
+      const data = await addSharedLinkAssets({
+        id: sharedLink.id,
+        assetIdsDto: {
+          assetIds: results.filter((id) => !!id) as string[],
+        },
+        key: getKey(),
+      });
 
-			notificationController.show({
-				message: `Added ${added} assets`,
-				type: NotificationType.Info
-			});
-		} catch (e) {
-			handleError(e, 'Unable to add assets to shared link');
-		}
-	};
+      const added = data.filter((item) => item.success).length;
+
+      notificationController.show({
+        message: $t('assets_added_count', { values: { count: added } }),
+        type: NotificationType.Info,
+      });
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_add_assets_to_shared_link'));
+    }
+  };
+
+  const handleSelectAll = () => {
+    assetInteraction.selectAssets(assets);
+  };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <section class="bg-immich-bg dark:bg-immich-dark-bg">
-	{#if isMultiSelectionMode}
-		<AssetSelectControlBar assets={selectedAssets} clearSelect={() => (selectedAssets = new Set())}>
-			<DownloadAction filename="immich-shared" sharedLinkKey={sharedLink.key} />
-			{#if isOwned}
-				<RemoveFromSharedLink bind:sharedLink />
-			{/if}
-		</AssetSelectControlBar>
-	{:else}
-		<ControlAppBar
-			on:close-button-click={() => goto('/photos')}
-			backIcon={ArrowLeft}
-			showBackButton={false}
-		>
-			<svelte:fragment slot="leading">
-				<a
-					data-sveltekit-preload-data="hover"
-					class="flex gap-2 place-items-center hover:cursor-pointer ml-6"
-					href="https://immich.app"
-				>
-					<ImmichLogo height="30" width="30" />
-					<h1 class="font-immich-title text-lg text-immich-primary dark:text-immich-dark-primary">
-						IMMICH
-					</h1>
-				</a>
-			</svelte:fragment>
+  {#if assetInteraction.selectionActive}
+    <AssetSelectControlBar
+      assets={assetInteraction.selectedAssets}
+      clearSelect={() => cancelMultiselect(assetInteraction)}
+    >
+      <CircleIconButton title={$t('select_all')} icon={mdiSelectAll} onclick={handleSelectAll} />
+      {#if sharedLink?.allowDownload}
+        <DownloadAction filename="immich-shared.zip" />
+      {/if}
+      {#if isOwned}
+        <RemoveFromSharedLink bind:sharedLink />
+      {/if}
+    </AssetSelectControlBar>
+  {:else}
+    <ControlAppBar onClose={() => goto(AppRoute.PHOTOS)} backIcon={mdiArrowLeft} showBackButton={false}>
+      {#snippet leading()}
+        <ImmichLogoSmallLink width={innerWidth} />
+      {/snippet}
 
-			<svelte:fragment slot="trailing">
-				{#if sharedLink?.allowUpload}
-					<CircleIconButton
-						title="Add Photos"
-						on:click={handleUploadAssets}
-						logo={FileImagePlusOutline}
-					/>
-				{/if}
+      {#snippet trailing()}
+        {#if sharedLink?.allowUpload}
+          <CircleIconButton
+            title={$t('add_photos')}
+            onclick={() => handleUploadAssets()}
+            icon={mdiFileImagePlusOutline}
+          />
+        {/if}
 
-				{#if sharedLink?.allowDownload}
-					<CircleIconButton
-						title="Download"
-						on:click={downloadAssets}
-						logo={FolderDownloadOutline}
-					/>
-				{/if}
-			</svelte:fragment>
-		</ControlAppBar>
-	{/if}
-	<section class="flex flex-col my-[160px] px-6 sm:px-12 md:px-24 lg:px-40">
-		<GalleryViewer {assets} {sharedLink} bind:selectedAssets viewFrom="shared-link-page" />
-	</section>
+        {#if sharedLink?.allowDownload}
+          <CircleIconButton title={$t('download')} onclick={downloadAssets} icon={mdiFolderDownloadOutline} />
+        {/if}
+      {/snippet}
+    </ControlAppBar>
+  {/if}
+  <section class="my-[160px] mx-4" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+    <GalleryViewer {assets} {assetInteraction} {viewport} />
+  </section>
 </section>

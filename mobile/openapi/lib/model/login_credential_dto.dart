@@ -1,7 +1,7 @@
 //
 // AUTO-GENERATED FILE, DO NOT MODIFY!
 //
-// @dart=2.12
+// @dart=2.18
 
 // ignore_for_file: unused_element, unused_import
 // ignore_for_file: always_put_required_named_parameters_first
@@ -23,8 +23,8 @@ class LoginCredentialDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginCredentialDto &&
-     other.email == email &&
-     other.password == password;
+    other.email == email &&
+    other.password == password;
 
   @override
   int get hashCode =>
@@ -46,6 +46,7 @@ class LoginCredentialDto {
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
   static LoginCredentialDto? fromJson(dynamic value) {
+    upgradeDto(value, "LoginCredentialDto");
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 

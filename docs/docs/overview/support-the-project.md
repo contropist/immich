@@ -1,30 +1,24 @@
 ---
-sidebar_position: 3
+sidebar_position: 5
 ---
 
 # Support The Project
 
-I am committed to this project, and I will not stop. I will keep updating the docs, adding new features, and fixing bugs. But I can't do it alone, so I need your help to give me additional motivation to keep going.
+## Report issues
 
-As our hosts in the [selfhosted.show - In the episode 'The-organization-which-must-not-be-named is a Hostile Actor'](https://selfhosted.show/79?t=1418) said, this is a massive undertaking that the team and I are doing. I would love to someday be able to do this full-time, and I am asking for your help to make that happen.
+By far the easiest way to help make Immich better it to use it and report issues and bugs. Found a bug? [Open an issue on GitHub][github-issue].
 
-If you feel like this is the right cause and the app is something you see yourself using for a long time, please consider supporting the project with one of the options below.
+## Translations
 
-## Donation
+Support the project by localizing on [Weblate](https://hosted.weblate.org/projects/immich/immich/). For more information, see the [Translations](/docs/developer/translations) section.
 
-- Monthly donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502)
-- One-time donation via [GitHub Sponsors](https://github.com/sponsors/alextran1502?frequency=one-time&sponsor=alextran1502)
-- [Librepay](https://liberapay.com/alex.tran1502/)
-- [buymeacoffee](https://www.buymeacoffee.com/altran1502)
-- Bitcoin: 1FvEp6P6NM8EZEkpGUFAN2LqJ1gxusNxZX
+## Development
 
-## Contributing
+If you are a programmer or developer, take a look at Immich's [technology stack](/docs/developer/architecture.mdx) and consider fixing bugs or building new features. The team and I are always looking for new contributors. For information about how to contribute as a developer, see the [Developer](/docs/developer/architecture.mdx) section.
 
-There are lots of non-monetary ways to contribute to Immich as well.
+## Purchase Immich
 
-1. Testing - Using Immich and reporting bugs is a great way to help support the project. Found a bug? [Open an issue on GitHub][github-issue].
-1. Translations - The Immich mobile app has been translated into [17 languages][github-langs] so far! To contribute with translations, email me at alex.tran1502@gmail.com or send me a message on discord.
-1. Development - If you are a programmer or developer, take a look at Immich's [technology stack](/docs/developer/architecture.md) and consider fixing bugs or building new features. The team and I are always looking for new contributors. For information about how to contribute as a developer, see the [Developer](/docs/developer/architecture.md) section.
+You can also [purchase Immich](https://buy.immich.app), for either one user or your entire server. Building Immich takes a lot of time and effort, and we have full-time engineers working on it to make it as good as we possibly can, so any support is greatly appreciated. Don't worry, all features will be free, forever! Nothing will ever be put behind any paywalls.
 
 [github-issue]: https://github.com/immich-app/immich/issues/new/choose
 [github-langs]: https://github.com/immich-app/immich/tree/main/mobile/assets/i18n
